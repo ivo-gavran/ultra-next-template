@@ -5,6 +5,7 @@ import { db } from "@/db";
 import { projects } from "@/db/schema";
 import { createProjectSchema } from "@/features/projects/schemas";
 import { apiError, ok } from "@/lib/api/response";
+import { ErrorCode } from "@/lib/errors";
 
 function serializeProject(project: typeof projects.$inferSelect) {
   return {
@@ -17,7 +18,7 @@ function serializeProject(project: typeof projects.$inferSelect) {
 export async function GET() {
   const session = await auth();
   if (!session?.user) {
-    return apiError("UNAUTHORIZED", "Authentication is required.", 401);
+    return apiError(ErrorCode.Unauthorized, "Authentication is required.", 401);
   }
 
   const rows = await db
@@ -32,14 +33,14 @@ export async function GET() {
 export async function POST(request: Request) {
   const session = await auth();
   if (!session?.user) {
-    return apiError("UNAUTHORIZED", "Authentication is required.", 401);
+    return apiError(ErrorCode.Unauthorized, "Authentication is required.", 401);
   }
 
   const body: unknown = await request.json().catch(() => null);
   const parsed = createProjectSchema.safeParse(body);
   if (!parsed.success) {
     return apiError(
-      "VALIDATION_ERROR",
+      ErrorCode.Validation,
       "Check the submitted fields.",
       400,
       parsed.error.flatten(),
@@ -56,7 +57,11 @@ export async function POST(request: Request) {
     .returning();
 
   if (!project) {
-    return apiError("CREATE_FAILED", "The project could not be created.", 500);
+    return apiError(
+      ErrorCode.CreateFailed,
+      "The project could not be created.",
+      500,
+    );
   }
 
   return ok(serializeProject(project), { status: 201 });

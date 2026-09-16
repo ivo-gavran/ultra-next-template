@@ -25,6 +25,7 @@ import {
   useDeleteProject,
   useProjects,
 } from "@/features/projects/queries";
+import { useValidationErrorMap } from "@/lib/validation/use-validation-error-map";
 
 export function ProjectManager() {
   const locale = useLocale();
@@ -32,19 +33,19 @@ export function ProjectManager() {
   const projects = useProjects();
   const createMutation = useCreateProject();
   const deleteMutation = useDeleteProject();
+  const validationErrorMap = useValidationErrorMap();
   const {
     register,
     handleSubmit,
     reset,
     formState: { errors },
   } = useForm<CreateProjectInput>({
-    resolver: zodResolver(createProjectSchema),
+    resolver: zodResolver(createProjectSchema, { error: validationErrorMap }),
     defaultValues: { name: "", description: "" },
   });
 
-  const onSubmit = handleSubmit(async (input) => {
-    await createMutation.mutateAsync(input);
-    reset();
+  const onSubmit = handleSubmit((input) => {
+    createMutation.mutate(input, { onSuccess: () => reset() });
   });
 
   return (
@@ -83,15 +84,6 @@ export function ProjectManager() {
             {createMutation.isPending ? t("creating") : t("create")}
           </Button>
         </form>
-
-        {createMutation.isError && (
-          <p
-            role="alert"
-            className="bg-destructive/10 text-destructive rounded-xl p-3 text-sm"
-          >
-            {createMutation.error.message}
-          </p>
-        )}
 
         <div className="space-y-3">
           {projects.isPending && (

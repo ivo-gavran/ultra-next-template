@@ -5,6 +5,7 @@ import { db } from "@/db";
 import { users } from "@/db/schema";
 import { signUpSchema } from "@/features/auth/schemas";
 import { apiError, ok } from "@/lib/api/response";
+import { ErrorCode } from "@/lib/errors";
 
 export async function POST(request: Request) {
   const body: unknown = await request.json().catch(() => null);
@@ -12,7 +13,7 @@ export async function POST(request: Request) {
 
   if (!parsed.success) {
     return apiError(
-      "VALIDATION_ERROR",
+      ErrorCode.Validation,
       "Check the submitted fields.",
       400,
       parsed.error.flatten(),
@@ -27,7 +28,7 @@ export async function POST(request: Request) {
 
   if (existingUser) {
     return apiError(
-      "EMAIL_TAKEN",
+      ErrorCode.EmailTaken,
       "An account with this email already exists.",
       409,
     );

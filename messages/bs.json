@@ -36,10 +36,38 @@
     "signUp": "Napravi nalog",
     "signingIn": "Prijava…",
     "creating": "Kreiranje naloga…",
-    "invalidCredentials": "Email ili lozinka nisu tačni.",
-    "genericError": "Nešto nije u redu. Pokušajte ponovo.",
     "noAccount": "Nemate nalog?",
     "hasAccount": "Već imate nalog?"
+  },
+  "Errors": {
+    "createFailed": "Projekat nije moguće kreirati. Pokušajte ponovo.",
+    "emailTaken": "Nalog sa ovom email adresom već postoji.",
+    "invalidCredentials": "Email ili lozinka nisu tačni.",
+    "invalidResponse": "Server je vratio neočekivan odgovor.",
+    "notFound": "Traženi sadržaj nije pronađen.",
+    "requestFailed": "Zahtjev nije uspio. Pokušajte ponovo.",
+    "unauthorized": "Vaša sesija je istekla. Prijavite se ponovo.",
+    "unexpected": "Nešto nije u redu. Pokušajte ponovo.",
+    "validation": "Provjerite unesene podatke."
+  },
+  "Toast": {
+    "dismiss": "Zatvori obavijest"
+  },
+  "Validation": {
+    "fields": {
+      "description": "Opis",
+      "email": "Email adresa",
+      "name": "Ime",
+      "password": "Lozinka",
+      "value": "Vrijednost"
+    },
+    "messages": {
+      "email": "Unesite ispravnu email adresu.",
+      "invalid": "Polje „{field}“ nije ispravno.",
+      "maxLength": "Polje „{field}“ smije sadržavati najviše {max} znakova.",
+      "minLength": "Polje „{field}“ mora sadržavati najmanje {min} znakova.",
+      "required": "Polje „{field}“ je obavezno."
+    }
   },
   "Dashboard": {
     "eyebrow": "Zaštićena ruta",

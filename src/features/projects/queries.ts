@@ -16,6 +16,7 @@ export function useProjects() {
   return useQuery({
     queryKey: projectKeys.all,
     queryFn: async () => (await getProjects()).data,
+    meta: { suppressErrorToast: true },
   });
 }
 
