@@ -97,6 +97,36 @@ Route handlers return one of two envelopes:
 
 `apiRequest` rejects non-2xx responses with a structured `AppError` and parses successful responses through the supplied Zod schema. Stable error codes are mapped to localized user messages, so server copy does not leak directly into the UI. TypeScript types and runtime data therefore cannot silently drift apart.
 
+## Query conventions
+
+Each feature owns a cache contract built with `createEntityQueryFactory`:
+
+```ts
+const projectQueryFactory = createEntityQueryFactory("projects");
+
+export const projectKeys = projectQueryFactory.keys;
+
+export const projectQueries = {
+  keys: projectKeys,
+  list: () =>
+    projectQueryFactory.list(
+      {},
+      {
+        queryFn: async () => (await getProjects()).data,
+      },
+    ),
+};
+```
+
+Consumers continue to use the native TanStack API:
+
+```ts
+const projects = useQuery(projectQueries.list());
+await queryClient.invalidateQueries({ queryKey: projectKeys.lists() });
+```
+
+The factory standardizes the key hierarchy for finite lists, infinite lists and details while returning TanStack's native `queryOptions` and `infiniteQueryOptions` objects. Consumers can therefore use every standard TanStack option without learning a replacement API, and invalidate at any scope. `src/lib/query` also includes cursor and page-number pagination helpers plus an optimistic update utility with rollback support. The project delete mutation demonstrates the complete optimistic lifecycle. Loading, error/retry and empty states use shared accessible UI primitives.
+
 ## Commands
 
 | Command                | Purpose                               |
