@@ -5,6 +5,11 @@ import { useLocale, useTranslations } from "next-intl";
 import { useForm } from "react-hook-form";
 
 import { ProjectCard } from "@/components/dashboard/project-card";
+import {
+  EmptyState,
+  ErrorState,
+  LoadingState,
+} from "@/components/ui/async-state";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -86,24 +91,15 @@ export function ProjectManager() {
         </form>
 
         <div className="space-y-3">
-          {projects.isPending && (
-            <div className="text-muted-foreground flex items-center gap-2 py-8 text-sm">
-              <Spinner /> {t("loading")}
-            </div>
+          {projects.isPending && <LoadingState label={t("loading")} />}
+          {projects.isError && !projects.data && (
+            <ErrorState
+              title={t("loadError")}
+              retryLabel={t("retry")}
+              onRetry={() => void projects.refetch()}
+            />
           )}
-          {projects.isError && (
-            <p
-              role="alert"
-              className="bg-destructive/10 text-destructive rounded-xl p-3 text-sm"
-            >
-              {t("loadError")}
-            </p>
-          )}
-          {projects.data?.length === 0 && (
-            <div className="border-border text-muted-foreground rounded-xl border border-dashed p-8 text-center text-sm">
-              {t("empty")}
-            </div>
-          )}
+          {projects.data?.length === 0 && <EmptyState title={t("empty")} />}
           {projects.data?.map((project) => (
             <ProjectCard
               key={project.id}

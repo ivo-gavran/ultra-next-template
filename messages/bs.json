@@ -84,6 +84,7 @@
     "empty": "Još nema projekata. Napravite prvi iznad.",
     "loading": "Učitavanje projekata…",
     "loadError": "Projekte nije moguće učitati.",
+    "retry": "Pokušaj ponovo",
     "delete": "Obriši {name}"
   }
 }

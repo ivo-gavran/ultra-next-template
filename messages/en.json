@@ -84,6 +84,7 @@
     "empty": "No projects yet. Create the first one above.",
     "loading": "Loading projects…",
     "loadError": "Projects could not be loaded.",
+    "retry": "Try again",
     "delete": "Delete {name}"
   }
 }

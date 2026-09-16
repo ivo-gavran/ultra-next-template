@@ -7,17 +7,28 @@ import {
   deleteProject,
   getProjects,
 } from "@/features/projects/api";
+import type { Project } from "@/features/projects/schemas";
+import {
+  createEntityQueryFactory,
+  optimisticallyUpdateQuery,
+} from "@/lib/query";
 
-export const projectKeys = {
-  all: ["projects"] as const,
+const allProjectFilters = {} as const;
+const projectQueryFactory = createEntityQueryFactory("projects");
+
+export const projectKeys = projectQueryFactory.keys;
+
+export const projectQueries = {
+  keys: projectKeys,
+  list: () =>
+    projectQueryFactory.list(allProjectFilters, {
+      queryFn: async () => (await getProjects()).data,
+      meta: { suppressErrorToast: true },
+    }),
 };
 
 export function useProjects() {
-  return useQuery({
-    queryKey: projectKeys.all,
-    queryFn: async () => (await getProjects()).data,
-    meta: { suppressErrorToast: true },
-  });
+  return useQuery(projectQueries.list());
 }
 
 export function useCreateProject() {
@@ -25,7 +36,7 @@ export function useCreateProject() {
   return useMutation({
     mutationFn: createProject,
     onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: projectKeys.all });
+      await queryClient.invalidateQueries({ queryKey: projectKeys.lists() });
     },
   });
 }
@@ -34,8 +45,19 @@ export function useDeleteProject() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: deleteProject,
-    onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: projectKeys.all });
+    onMutate: async (id) => {
+      const { queryKey } = projectQueries.list();
+      return optimisticallyUpdateQuery<Project[]>(
+        queryClient,
+        queryKey,
+        (projects) => projects.filter((project) => project.id !== id),
+      );
+    },
+    onError: (_error, _id, optimisticUpdate) => {
+      optimisticUpdate?.rollback();
+    },
+    onSettled: async () => {
+      await queryClient.invalidateQueries({ queryKey: projectKeys.lists() });
     },
   });
 }
