@@ -1,7 +1,8 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { z } from "zod";
 
-import { apiRequest, ApiError } from "@/lib/api/client";
+import { apiRequest } from "@/lib/api/client";
+import { AppError } from "@/lib/errors";
 
 afterEach(() => {
   vi.unstubAllGlobals();
@@ -43,7 +44,7 @@ describe("apiRequest", () => {
       schema: z.object({ data: z.array(z.unknown()) }),
     });
 
-    await expect(request).rejects.toMatchObject<Partial<ApiError>>({
+    await expect(request).rejects.toMatchObject<Partial<AppError>>({
       status: 401,
       code: "UNAUTHORIZED",
       message: "Sign in first.",

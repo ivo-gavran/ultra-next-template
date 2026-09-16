@@ -36,10 +36,38 @@
     "signUp": "Create account",
     "signingIn": "Signing in…",
     "creating": "Creating account…",
-    "invalidCredentials": "Email or password is incorrect.",
-    "genericError": "Something went wrong. Please try again.",
     "noAccount": "No account yet?",
     "hasAccount": "Already have an account?"
+  },
+  "Errors": {
+    "createFailed": "The project could not be created. Please try again.",
+    "emailTaken": "An account with this email already exists.",
+    "invalidCredentials": "Email or password is incorrect.",
+    "invalidResponse": "The server returned an unexpected response.",
+    "notFound": "The requested item could not be found.",
+    "requestFailed": "The request failed. Please try again.",
+    "unauthorized": "Your session has expired. Please sign in again.",
+    "unexpected": "Something went wrong. Please try again.",
+    "validation": "Check the submitted fields."
+  },
+  "Toast": {
+    "dismiss": "Dismiss notification"
+  },
+  "Validation": {
+    "fields": {
+      "description": "Description",
+      "email": "Email address",
+      "name": "Name",
+      "password": "Password",
+      "value": "Value"
+    },
+    "messages": {
+      "email": "Enter a valid email address.",
+      "invalid": "{field} is invalid.",
+      "maxLength": "{field} must contain at most {max} characters.",
+      "minLength": "{field} must contain at least {min} characters.",
+      "required": "{field} is required."
+    }
   },
   "Dashboard": {
     "eyebrow": "Protected route",

@@ -11,17 +11,22 @@ import { Label } from "@/components/ui/label";
 import { Spinner } from "@/components/ui/spinner";
 import { signInSchema, type SignInInput } from "@/features/auth/schemas";
 import { useRouter } from "@/i18n/navigation";
+import { AppError, ErrorCode } from "@/lib/errors";
+import { useErrorMessage } from "@/lib/errors/use-error-message";
+import { useValidationErrorMap } from "@/lib/validation/use-validation-error-map";
 
 export function SignInForm() {
   const t = useTranslations("Auth");
   const router = useRouter();
+  const getErrorMessage = useErrorMessage();
+  const validationErrorMap = useValidationErrorMap();
   const {
     register,
     handleSubmit,
     setError,
     formState: { errors, isSubmitting },
   } = useForm<SignInInput>({
-    resolver: zodResolver(signInSchema),
+    resolver: zodResolver(signInSchema, { error: validationErrorMap }),
     defaultValues: { email: "", password: "" },
   });
 
@@ -33,14 +38,18 @@ export function SignInForm() {
       });
 
       if (result.error) {
-        setError("root", { message: t("invalidCredentials") });
+        setError("root", {
+          message: getErrorMessage(
+            new AppError({ code: ErrorCode.InvalidCredentials }),
+          ),
+        });
         return;
       }
 
       router.replace("/dashboard");
       router.refresh();
-    } catch {
-      setError("root", { message: t("genericError") });
+    } catch (error) {
+      setError("root", { message: getErrorMessage(error) });
     }
   });
 

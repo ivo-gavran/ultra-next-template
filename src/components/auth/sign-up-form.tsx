@@ -12,18 +12,21 @@ import { Spinner } from "@/components/ui/spinner";
 import { registerAccount } from "@/features/auth/api";
 import { signUpSchema, type SignUpInput } from "@/features/auth/schemas";
 import { useRouter } from "@/i18n/navigation";
-import { ApiError } from "@/lib/api/client";
+import { useErrorMessage } from "@/lib/errors/use-error-message";
+import { useValidationErrorMap } from "@/lib/validation/use-validation-error-map";
 
 export function SignUpForm() {
   const t = useTranslations("Auth");
   const router = useRouter();
+  const getErrorMessage = useErrorMessage();
+  const validationErrorMap = useValidationErrorMap();
   const {
     register,
     handleSubmit,
     setError,
     formState: { errors, isSubmitting },
   } = useForm<SignUpInput>({
-    resolver: zodResolver(signUpSchema),
+    resolver: zodResolver(signUpSchema, { error: validationErrorMap }),
     defaultValues: { name: "", email: "", password: "" },
   });
 
@@ -45,7 +48,7 @@ export function SignUpForm() {
       router.refresh();
     } catch (error) {
       setError("root", {
-        message: error instanceof ApiError ? error.message : t("genericError"),
+        message: getErrorMessage(error),
       });
     }
   });

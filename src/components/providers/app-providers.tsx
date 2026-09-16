@@ -1,26 +1,36 @@
 "use client";
 
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { QueryClientProvider } from "@tanstack/react-query";
+import { useTranslations } from "next-intl";
 import { ThemeProvider } from "next-themes";
 import { useState } from "react";
 
-export function AppProviders({ children }: { children: React.ReactNode }) {
-  const [queryClient] = useState(
-    () =>
-      new QueryClient({
-        defaultOptions: {
-          queries: {
-            staleTime: 30_000,
-            retry: 1,
-            refetchOnWindowFocus: false,
-          },
-        },
-      }),
+import { ToastProvider, useToast } from "@/components/ui/toast";
+import { useErrorMessage } from "@/lib/errors/use-error-message";
+import { createQueryClient } from "@/lib/query/client";
+
+function QueryProvider({ children }: { children: React.ReactNode }) {
+  const toast = useToast();
+  const getErrorMessage = useErrorMessage();
+  const [queryClient] = useState(() =>
+    createQueryClient({
+      notifyError: (error) => toast.error(getErrorMessage(error)),
+    }),
   );
 
   return (
+    <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+  );
+}
+
+export function AppProviders({ children }: { children: React.ReactNode }) {
+  const t = useTranslations("Toast");
+
+  return (
     <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-      <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+      <ToastProvider dismissLabel={t("dismiss")}>
+        <QueryProvider>{children}</QueryProvider>
+      </ToastProvider>
     </ThemeProvider>
   );
 }

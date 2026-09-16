@@ -95,7 +95,7 @@ Route handlers return one of two envelopes:
 { error: { code: string; message: string; details?: unknown } }
 ```
 
-`apiRequest` rejects non-2xx responses with `ApiError` and parses successful responses through the supplied Zod schema. TypeScript types and runtime data therefore cannot silently drift apart.
+`apiRequest` rejects non-2xx responses with a structured `AppError` and parses successful responses through the supplied Zod schema. Stable error codes are mapped to localized user messages, so server copy does not leak directly into the UI. TypeScript types and runtime data therefore cannot silently drift apart.
 
 ## Commands
 
