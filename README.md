@@ -127,6 +127,8 @@ await queryClient.invalidateQueries({ queryKey: projectKeys.lists() });
 
 The factory standardizes the key hierarchy for finite lists, infinite lists and details while returning TanStack's native `queryOptions` and `infiniteQueryOptions` objects. Consumers can therefore use every standard TanStack option without learning a replacement API, and invalidate at any scope. `src/lib/query` also includes cursor and page-number pagination helpers plus an optimistic update utility with rollback support. The project delete mutation demonstrates the complete optimistic lifecycle. Loading, error/retry and empty states use shared accessible UI primitives.
 
+TanStack Query DevTools are mounted with the shared query client and are available automatically in development builds. The DevTools package renders nothing in production.
+
 ## Commands
 
 | Command                | Purpose                               |
