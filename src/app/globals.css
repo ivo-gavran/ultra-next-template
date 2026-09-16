@@ -1,0 +1,135 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+:root {
+  --radius: 0.75rem;
+  --background: #f8fafc;
+  --foreground: #111827;
+  --card: #ffffff;
+  --card-foreground: #111827;
+  --popover: #ffffff;
+  --popover-foreground: #111827;
+  --muted: #eef2f7;
+  --muted-foreground: #64748b;
+  --border: #dfe5ed;
+  --input: #dfe5ed;
+  --primary: #6558e8;
+  --primary-foreground: #ffffff;
+  --secondary: #e9e7ff;
+  --secondary-foreground: #352e84;
+  --accent: #eeeaff;
+  --accent-foreground: #352e84;
+  --destructive: #dc2626;
+  --ring: #6558e8;
+  --chart-1: #6558e8;
+  --chart-2: #0ea5e9;
+  --chart-3: #14b8a6;
+  --chart-4: #f59e0b;
+  --chart-5: #e11d48;
+}
+
+.dark {
+  --background: #0d1017;
+  --foreground: #f1f5f9;
+  --card: #151923;
+  --card-foreground: #f1f5f9;
+  --popover: #151923;
+  --popover-foreground: #f1f5f9;
+  --muted: #202634;
+  --muted-foreground: #9ba8ba;
+  --border: #2a3140;
+  --input: #343c4e;
+  --primary: #9b91ff;
+  --primary-foreground: #17132d;
+  --secondary: #29274a;
+  --secondary-foreground: #e5e1ff;
+  --accent: #29274a;
+  --accent-foreground: #e5e1ff;
+  --destructive: #f87171;
+  --ring: #9b91ff;
+  --chart-1: #9b91ff;
+  --chart-2: #38bdf8;
+  --chart-3: #2dd4bf;
+  --chart-4: #fbbf24;
+  --chart-5: #fb7185;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --font-sans: ui-sans-serif, system-ui, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+}
+
+* {
+  border-color: var(--border);
+  outline-color: color-mix(in srgb, var(--ring) 50%, transparent);
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+}
+
+button:not(:disabled),
+[role="button"]:not(:disabled) {
+  cursor: pointer;
+}
+
+::selection {
+  background: color-mix(in srgb, var(--primary) 28%, transparent);
+}
+
+.hero-grid {
+  background-image:
+    linear-gradient(
+      to right,
+      color-mix(in srgb, var(--border) 60%, transparent) 1px,
+      transparent 1px
+    ),
+    linear-gradient(
+      to bottom,
+      color-mix(in srgb, var(--border) 60%, transparent) 1px,
+      transparent 1px
+    ),
+    radial-gradient(
+      circle at 50% 22%,
+      color-mix(in srgb, var(--primary) 24%, transparent),
+      transparent 34%
+    );
+  background-size:
+    44px 44px,
+    44px 44px,
+    100% 100%;
+  mask-image: linear-gradient(to bottom, black 0%, transparent 78%);
+}

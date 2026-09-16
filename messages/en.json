@@ -1,0 +1,61 @@
+{
+  "Nav": {
+    "brand": "Ultra Next",
+    "home": "Home",
+    "dashboard": "Dashboard",
+    "signIn": "Sign in",
+    "signOut": "Sign out",
+    "switchLanguage": "BS"
+  },
+  "Home": {
+    "eyebrow": "A production-minded Next.js starter",
+    "title": "Ship the product, not the plumbing.",
+    "description": "Auth, PostgreSQL, validated APIs, query state, themes, translations and a complete quality toolchain—already wired together.",
+    "primaryCta": "Open dashboard",
+    "secondaryCta": "Create account",
+    "stackTitle": "Everything has a clear boundary",
+    "serverTitle": "Server foundation",
+    "serverDescription": "Auth.js, PostgreSQL and Drizzle with generated migrations and ownership checks.",
+    "clientTitle": "Client experience",
+    "clientDescription": "TanStack Query, accessible UI primitives, dark mode and typed forms.",
+    "qualityTitle": "Quality built in",
+    "qualityDescription": "Vitest, Testing Library, Storybook, ESLint, Prettier, hooks and CI."
+  },
+  "Auth": {
+    "signInTitle": "Welcome back",
+    "signInDescription": "Sign in with the account stored in your local PostgreSQL database.",
+    "signUpTitle": "Create your account",
+    "signUpDescription": "Start with credentials auth, then add any Auth.js provider you need.",
+    "name": "Name",
+    "email": "Email",
+    "password": "Password",
+    "namePlaceholder": "Ada Lovelace",
+    "emailPlaceholder": "you@example.com",
+    "passwordHint": "At least 8 characters",
+    "signIn": "Sign in",
+    "signUp": "Create account",
+    "signingIn": "Signing in…",
+    "creating": "Creating account…",
+    "invalidCredentials": "Email or password is incorrect.",
+    "genericError": "Something went wrong. Please try again.",
+    "noAccount": "No account yet?",
+    "hasAccount": "Already have an account?"
+  },
+  "Dashboard": {
+    "eyebrow": "Protected route",
+    "title": "Welcome, {name}",
+    "description": "This page, its API and every project row are scoped to the signed-in user.",
+    "projectsTitle": "Projects",
+    "projectsDescription": "A small end-to-end CRUD example using TanStack Query and Drizzle.",
+    "name": "Project name",
+    "descriptionLabel": "Description",
+    "namePlaceholder": "Launch website",
+    "descriptionPlaceholder": "Optional context for the project",
+    "create": "Add project",
+    "creating": "Adding…",
+    "empty": "No projects yet. Create the first one above.",
+    "loading": "Loading projects…",
+    "loadError": "Projects could not be loaded.",
+    "delete": "Delete {name}"
+  }
+}
