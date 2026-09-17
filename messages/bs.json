@@ -53,6 +53,16 @@
   "Toast": {
     "dismiss": "Zatvori obavijest"
   },
+  "Resilience": {
+    "errorTitle": "Ovu stranicu nije moguće učitati.",
+    "errorDescription": "Dogodila se neočekivana greška. Pokušajte ponovo učitati stranicu.",
+    "errorReference": "Oznaka greške: {digest}",
+    "retry": "Pokušaj ponovo",
+    "loadingPage": "Učitavanje stranice…",
+    "notFoundTitle": "Stranica nije pronađena",
+    "notFoundDescription": "Stranica koju tražite ne postoji ili je premještena.",
+    "backHome": "Nazad na početnu"
+  },
   "Validation": {
     "fields": {
       "description": "Opis",

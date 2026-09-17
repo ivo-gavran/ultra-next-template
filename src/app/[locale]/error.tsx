@@ -1,0 +1,38 @@
+"use client";
+
+import { useTranslations } from "next-intl";
+import { useEffect } from "react";
+
+import { RouteStateShell } from "@/components/layout/route-state-shell";
+import { ErrorState } from "@/components/ui/async-state";
+import { reportAppError, type AppError } from "@/lib/errors/reporting";
+
+export default function LocaleError({
+  error,
+  retry,
+}: {
+  error: AppError;
+  retry: () => void;
+}) {
+  const t = useTranslations("Resilience");
+
+  useEffect(() => {
+    reportAppError(error, { boundary: "route" });
+  }, [error]);
+
+  return (
+    <RouteStateShell>
+      <ErrorState
+        title={t("errorTitle")}
+        description={t("errorDescription")}
+        retryLabel={t("retry")}
+        onRetry={retry}
+      />
+      {error.digest && (
+        <p className="text-muted-foreground mt-3 text-center font-mono text-xs">
+          {t("errorReference", { digest: error.digest })}
+        </p>
+      )}
+    </RouteStateShell>
+  );
+}
