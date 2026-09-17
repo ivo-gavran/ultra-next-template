@@ -1,9 +1,9 @@
-import { hasLocale, NextIntlClientProvider } from "next-intl";
+import { NextIntlClientProvider } from "next-intl";
 import { getMessages, setRequestLocale } from "next-intl/server";
-import { notFound } from "next/navigation";
 
 import { SiteHeader } from "@/components/layout/site-header";
 import { AppProviders } from "@/components/providers/app-providers";
+import { getRouteLocale } from "@/i18n/params";
 import { routing } from "@/i18n/routing";
 
 export function generateStaticParams() {
@@ -17,9 +17,7 @@ export default async function LocaleLayout({
   children: React.ReactNode;
   params: Promise<{ locale: string }>;
 }) {
-  const { locale } = await params;
-  if (!hasLocale(routing.locales, locale)) notFound();
-
+  const locale = await getRouteLocale(params);
   setRequestLocale(locale);
   const messages = await getMessages();
 

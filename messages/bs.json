@@ -74,8 +74,8 @@
     "messages": {
       "email": "Unesite ispravnu email adresu.",
       "invalid": "Polje „{field}“ nije ispravno.",
-      "maxLength": "Polje „{field}“ smije sadržavati najviše {max} znakova.",
-      "minLength": "Polje „{field}“ mora sadržavati najmanje {min} znakova.",
+      "maxLength": "Polje „{field}“ smije sadržavati najviše {max, number} znakova.",
+      "minLength": "Polje „{field}“ mora sadržavati najmanje {min, number} znakova.",
       "required": "Polje „{field}“ je obavezno."
     }
   },

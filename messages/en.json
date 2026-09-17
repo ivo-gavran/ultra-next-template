@@ -74,8 +74,8 @@
     "messages": {
       "email": "Enter a valid email address.",
       "invalid": "{field} is invalid.",
-      "maxLength": "{field} must contain at most {max} characters.",
-      "minLength": "{field} must contain at least {min} characters.",
+      "maxLength": "{field} must contain at most {max, number} characters.",
+      "minLength": "{field} must contain at least {min, number} characters.",
       "required": "{field} is required."
     }
   },

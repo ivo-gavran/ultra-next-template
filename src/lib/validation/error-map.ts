@@ -9,7 +9,7 @@ const validationFieldKeys = {
 
 type ValidationField = keyof typeof validationFieldKeys;
 
-type ValidationTranslationKey =
+export type ValidationTranslationKey =
   | (typeof validationFieldKeys)[ValidationField]
   | "fields.value"
   | "messages.email"
@@ -18,10 +18,25 @@ type ValidationTranslationKey =
   | "messages.minLength"
   | "messages.required";
 
-export type ValidationTranslator = (
-  key: ValidationTranslationKey,
-  values?: Record<string, number | string>,
-) => string;
+export type ValidationTranslationValues = Record<string, number | string>;
+
+type ValidationStaticKey = Exclude<
+  ValidationTranslationKey,
+  | "messages.invalid"
+  | "messages.maxLength"
+  | "messages.minLength"
+  | "messages.required"
+>;
+
+export type ValidationTranslator = {
+  (key: ValidationStaticKey): string;
+  (
+    key: "messages.invalid" | "messages.required",
+    values: { field: string },
+  ): string;
+  (key: "messages.maxLength", values: { field: string; max: number }): string;
+  (key: "messages.minLength", values: { field: string; min: number }): string;
+};
 
 function getFieldKey(pathItem: PropertyKey | undefined) {
   if (

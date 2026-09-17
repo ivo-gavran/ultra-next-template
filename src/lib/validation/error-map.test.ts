@@ -3,6 +3,8 @@ import { describe, expect, it } from "vitest";
 import { signUpSchema } from "@/features/auth/schemas";
 import {
   createValidationErrorMap,
+  type ValidationTranslationKey,
+  type ValidationTranslationValues,
   type ValidationTranslator,
 } from "@/lib/validation/error-map";
 
@@ -19,11 +21,14 @@ const translations = {
   "messages.required": "{field} is required.",
 } as const;
 
-const translate: ValidationTranslator = (key, values) =>
+const translate = ((
+  key: ValidationTranslationKey,
+  values?: ValidationTranslationValues,
+) =>
   Object.entries(values ?? {}).reduce<string>(
     (message, [name, value]) => message.replace(`{${name}}`, String(value)),
     translations[key] as string,
-  );
+  )) as ValidationTranslator;
 
 describe("createValidationErrorMap", () => {
   it("localizes field constraints without changing the shared schema", () => {

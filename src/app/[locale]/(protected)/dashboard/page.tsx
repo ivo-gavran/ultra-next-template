@@ -2,13 +2,14 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 
 import { auth } from "@/auth";
 import { ProjectManager } from "@/components/dashboard/project-manager";
+import { getRouteLocale } from "@/i18n/params";
 
 export default async function DashboardPage({
   params,
 }: {
   params: Promise<{ locale: string }>;
 }) {
-  const { locale } = await params;
+  const locale = await getRouteLocale(params);
   setRequestLocale(locale);
   const [session, t] = await Promise.all([
     auth(),
