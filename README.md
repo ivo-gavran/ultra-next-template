@@ -142,6 +142,7 @@ Unexpected route and global errors pass through `reportAppError` in `src/lib/err
 | `pnpm dev`             | Start the development server          |
 | `pnpm build`           | Create a production build             |
 | `pnpm lint`            | Run ESLint with zero warnings allowed |
+| `pnpm typegen`         | Generate Next.js and message types    |
 | `pnpm typecheck`       | Run strict TypeScript checks          |
 | `pnpm test`            | Run the Vitest suite once             |
 | `pnpm test:coverage`   | Generate test coverage                |
@@ -167,6 +168,9 @@ Use `db:push` only for disposable local experimentation; committed environments 
 1. Add the locale to `src/i18n/routing.ts`.
 2. Copy a complete message file into `messages/<locale>.json`.
 3. Update the locale switcher if you want more than the included two-language toggle.
+4. Run `pnpm typecheck` and `pnpm test` to verify message keys and ICU arguments against the English source locale.
+
+`next-intl` derives namespaces, message keys, interpolation arguments and supported locale types from `messages/en.json` and `src/i18n/routing.ts`. English is therefore the canonical message schema; every other locale must preserve the same key tree and argument names.
 
 ## CI and local hooks
 
