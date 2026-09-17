@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { getLocale } from "next-intl/server";
 
 import "./globals.css";
 
@@ -8,13 +9,15 @@ export const metadata: Metadata = {
     "A production-minded Next.js starter with auth, PostgreSQL, Drizzle, i18n and a complete quality toolchain.",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const locale = await getLocale();
+
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang={locale} suppressHydrationWarning>
       <body className="bg-background text-foreground min-h-screen font-sans antialiased">
         {children}
       </body>

@@ -129,6 +129,12 @@ The factory standardizes the key hierarchy for finite lists, infinite lists and 
 
 TanStack Query DevTools are mounted with the shared query client and are available automatically in development builds. The DevTools package renders nothing in production.
 
+## Route resilience
+
+App Router failures use application-owned fallbacks instead of the framework defaults. Localized route errors provide a retry action and an optional server error reference, unknown URLs render a locale-aware 404 page, and the protected dashboard has an accessible streaming loading state. Root-layout failures fall back to a standalone global error document.
+
+Unexpected route and global errors pass through `reportAppError` in `src/lib/errors/reporting.ts`. It currently writes structured context to the console and provides one integration point for adding an external error-reporting service later.
+
 ## Commands
 
 | Command                | Purpose                               |
