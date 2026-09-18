@@ -8,6 +8,7 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
+    "audit:dependencies": "pnpm audit --prod --audit-level high --ignore-registry-errors",
     "lint": "eslint . --max-warnings 0",
     "typegen": "next typegen",
     "typecheck": "pnpm typegen && tsc --noEmit",
