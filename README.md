@@ -16,7 +16,8 @@ The goal is simple: clone it and start on product UI. Routing, query state, vali
 | UI                   | shadcn/ui (Radix), Tailwind CSS v4, semantic design tokens and dark mode    |
 | Internationalization | `next-intl`, locale-prefixed routing, English and Bosnian                   |
 | Quality              | ESLint, Prettier, Vitest, Playwright, Storybook and accessibility checks    |
-| Workflow             | pnpm, Lefthook, Commitlint and GitHub Actions                               |
+| Security             | CSP, secure response headers and automated dependency review                |
+| Workflow             | pnpm, Lefthook, Commitlint, Dependabot and GitHub Actions                   |
 
 The Projects page demonstrates the complete frontend path from a validated form through a TanStack Query mutation to a typed external REST contract. Development and E2E use the same contract through MSW; production points it at your API.
 
@@ -174,6 +175,16 @@ Until an adapter is configured, reports use a console reporter that remains usef
 The pipeline creates a safe error copy without Axios causes or application details, redacts metadata keys such as tokens, cookies, passwords and API keys, handles circular metadata, and contains reporter failures. Request headers, bodies, query values and concrete request URLs are never added automatically.
 
 Set `meta: { suppressErrorReport: true }` on an intentionally handled TanStack query or mutation when it should not reach the reporter. This is separate from `suppressErrorToast`.
+
+## Security baseline
+
+Every route receives a Content Security Policy and defensive browser headers. The policy permits the configured `NEXT_PUBLIC_API_URL` origin for browser requests, disables framing and object embedding, limits powerful browser features, removes the `X-Powered-By` header, and enables HSTS plus insecure-request upgrades in production.
+
+The default CSP intentionally uses `unsafe-inline` for Next.js scripts and styles so the policy does not itself force routes into dynamic rendering. A nonce-based strict CSP requires dynamic rendering in Next.js. If a product already renders every request dynamically and needs that stronger tradeoff, migrate the policy to nonces in `proxy.ts` using the current Next.js CSP guide.
+
+Add explicit CSP sources when integrating analytics, remote images, WebSockets or an external authentication provider. Cross-Origin-Opener-Policy is intentionally not enabled because it can break OAuth popup flows. Do not add secrets to `NEXT_PUBLIC_*` variables; Next.js embeds them in the client bundle.
+
+Dependabot checks npm packages and GitHub Actions weekly. Pull requests that introduce dependencies with known high or critical vulnerabilities fail the dependency review job. GitHub's dependency graph and Dependabot security updates must also be enabled in the repository settings.
 
 ## Commands
 
