@@ -15,7 +15,7 @@ The goal is simple: clone it and start on product code. Authentication, protecte
 | Forms                | React Hook Form and shared Zod schemas                                                    |
 | UI                   | shadcn/ui (Radix), Tailwind CSS v4, semantic design tokens and dark mode                  |
 | Internationalization | `next-intl`, locale-prefixed routing, English and Bosnian                                 |
-| Quality              | ESLint, Prettier, Vitest, Testing Library, Storybook and accessibility checks             |
+| Quality              | ESLint, Prettier, Vitest, Playwright, Storybook and accessibility checks                  |
 | Workflow             | pnpm, Lefthook, Commitlint, Docker Compose and GitHub Actions                             |
 
 The dashboard includes a small project CRUD flow that demonstrates the full path from an authenticated UI mutation through a protected route handler to an owner-scoped database query.
@@ -146,6 +146,9 @@ Unexpected route and global errors pass through `reportAppError` in `src/lib/err
 | `pnpm typecheck`       | Run strict TypeScript checks          |
 | `pnpm test`            | Run the Vitest suite once             |
 | `pnpm test:coverage`   | Generate test coverage                |
+| `pnpm test:e2e:local`  | Start the test database and run E2E   |
+| `pnpm test:e2e`        | Run E2E against an available test DB  |
+| `pnpm test:e2e:ui`     | Open Playwright's interactive runner  |
 | `pnpm storybook`       | Start Storybook on port 6006          |
 | `pnpm build-storybook` | Build static Storybook output         |
 | `pnpm db:generate`     | Generate SQL from schema changes      |
@@ -174,7 +177,20 @@ Use `db:push` only for disposable local experimentation; committed environments 
 
 ## CI and local hooks
 
-GitHub Actions verifies formatting, linting, types, unit tests, Storybook and the production build. Lefthook runs the fast static checks before a commit, while Commitlint enforces Conventional Commits for commit messages.
+GitHub Actions verifies formatting, linting, types, unit tests, Storybook, the production build and browser-level E2E tests against PostgreSQL. Lefthook runs the fast static checks before a commit, while Commitlint enforces Conventional Commits for commit messages.
+
+## End-to-end tests
+
+Install the Chromium browser once, then run the local E2E workflow:
+
+```bash
+pnpm exec playwright install chromium
+pnpm test:e2e:local
+```
+
+The local workflow starts an ephemeral PostgreSQL container on port `5433`. Playwright applies committed Drizzle migrations, clears application tables before every test and starts Next.js on port `3100` with E2E-only environment values. The suite exercises locale routing, protected-route redirects, localized 404 handling and the complete sign-up, sign-in, sign-out and project CRUD path without mocking the application API.
+
+Use `pnpm test:e2e:ui` after the database is running for Playwright's interactive runner. Failure traces, screenshots and videos are written to ignored local report directories; CI uploads them as an artifact only when the E2E job fails.
 
 ## Deployment
 

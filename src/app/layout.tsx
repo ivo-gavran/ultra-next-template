@@ -17,7 +17,7 @@ export default async function RootLayout({
   const locale = await getLocale();
 
   return (
-    <html lang={locale} suppressHydrationWarning>
+    <html lang={locale} data-scroll-behavior="smooth" suppressHydrationWarning>
       <body className="bg-background text-foreground min-h-screen font-sans antialiased">
         {children}
       </body>
