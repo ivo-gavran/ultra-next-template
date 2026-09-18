@@ -1,12 +1,12 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 import { fn } from "storybook/test";
 
-import { ProjectCard } from "@/components/dashboard/project-card";
+import { ProjectCard } from "@/components/projects/project-card";
 
 const project = {
   id: "8bb42762-23c4-4db2-8aba-2cc68fcdde15",
   name: "Launch the customer portal",
-  description: "Ship authentication, billing and the first reporting workflow.",
+  description: "Connect the project list to the production API contract.",
   createdAt: "2026-09-15T10:00:00.000Z",
   updatedAt: "2026-09-15T10:00:00.000Z",
 };

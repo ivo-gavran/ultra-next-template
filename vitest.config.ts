@@ -6,6 +6,10 @@ export default defineConfig({
   resolve: { tsconfigPaths: true },
   test: {
     environment: "jsdom",
+    env: {
+      NEXT_PUBLIC_API_URL: "https://api.example.test",
+      NEXT_PUBLIC_API_MOCKING: "disabled",
+    },
     exclude: [...configDefaults.exclude, "e2e/**"],
     setupFiles: ["./src/test/setup.ts"],
     coverage: {

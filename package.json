@@ -1,7 +1,7 @@
 {
   "name": "ultra-next-template",
   "version": "1.0.0",
-  "description": "Production-minded Next.js starter with Auth.js, Drizzle, PostgreSQL, TanStack Query, i18n, Storybook and tests.",
+  "description": "Production-minded Next.js frontend starter with typed API boundaries, TanStack Query, i18n, Storybook and tests.",
   "type": "module",
   "private": true,
   "scripts": {
@@ -15,34 +15,23 @@
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
     "test:e2e": "playwright test",
-    "test:e2e:db": "docker compose -f docker-compose.e2e.yml up -d --wait",
-    "test:e2e:local": "pnpm test:e2e:db && pnpm test:e2e",
     "test:e2e:ui": "playwright test --ui",
     "test:e2e:report": "playwright show-report",
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build",
-    "db:generate": "drizzle-kit generate",
-    "db:migrate": "drizzle-kit migrate",
-    "db:push": "drizzle-kit push",
-    "db:studio": "drizzle-kit studio",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "prepare": "lefthook install"
   },
   "dependencies": {
-    "@auth/drizzle-adapter": "^1.11.3",
     "@hookform/resolvers": "^5.9.1",
     "@tanstack/react-query": "^5.102.8",
-    "bcryptjs": "^3.0.3",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
-    "drizzle-orm": "^0.45.2",
     "lucide-react": "^1.45.0",
     "next": "16.3.5",
-    "next-auth": "5.0.0-beta.32",
     "next-intl": "^4.14.4",
     "next-themes": "^0.4.6",
-    "postgres": "^3.4.9",
     "radix-ui": "^1.6.7",
     "react": "19.2.8",
     "react-dom": "19.2.8",
@@ -53,7 +42,6 @@
   "devDependencies": {
     "@commitlint/cli": "^21.2.2",
     "@commitlint/config-conventional": "^21.2.2",
-    "@next/env": "16.3.5",
     "@playwright/test": "^1.63.0",
     "@storybook/addon-a11y": "^10.6.0",
     "@storybook/nextjs-vite": "^10.6.0",
@@ -68,11 +56,11 @@
     "@types/react-dom": "^19",
     "@vitejs/plugin-react": "^6.1.1",
     "@vitest/coverage-v8": "^5.0.0",
-    "drizzle-kit": "^0.31.10",
     "eslint": "^9",
     "eslint-config-next": "16.3.5",
     "jsdom": "^30.0.1",
     "lefthook": "^2.1.12",
+    "msw": "^2.15.0",
     "prettier": "^3.9.6",
     "prettier-plugin-tailwindcss": "^0.8.1",
     "storybook": "^10.6.0",
@@ -80,5 +68,10 @@
     "typescript": "^5",
     "vitest": "^5.0.0"
   },
-  "packageManager": "pnpm@11.19.0"
+  "packageManager": "pnpm@11.19.0",
+  "msw": {
+    "workerDirectory": [
+      "public"
+    ]
+  }
 }

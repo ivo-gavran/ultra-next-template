@@ -6,6 +6,7 @@ import { useTranslations } from "next-intl";
 import { ThemeProvider } from "next-themes";
 import { useState } from "react";
 
+import { ApiMockProvider } from "@/components/providers/api-mock-provider";
 import { ToastProvider, useToast } from "@/components/ui/toast";
 import { useErrorMessage } from "@/lib/errors/use-error-message";
 import { createQueryClient } from "@/lib/query/client";
@@ -31,10 +32,12 @@ export function AppProviders({ children }: { children: React.ReactNode }) {
   const t = useTranslations("Toast");
 
   return (
-    <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-      <ToastProvider dismissLabel={t("dismiss")}>
-        <QueryProvider>{children}</QueryProvider>
-      </ToastProvider>
-    </ThemeProvider>
+    <ApiMockProvider>
+      <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+        <ToastProvider dismissLabel={t("dismiss")}>
+          <QueryProvider>{children}</QueryProvider>
+        </ToastProvider>
+      </ThemeProvider>
+    </ApiMockProvider>
   );
 }

@@ -1,4 +1,4 @@
-import { ArrowRight, Database, Layers3, ShieldCheck } from "lucide-react";
+import { ArrowRight, Braces, Layers3, ShieldCheck } from "lucide-react";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 
 import { Button } from "@/components/ui/button";
@@ -17,9 +17,9 @@ export default async function HomePage({
 
   const features = [
     {
-      icon: Database,
-      title: t("serverTitle"),
-      description: t("serverDescription"),
+      icon: Braces,
+      title: t("apiTitle"),
+      description: t("apiDescription"),
     },
     {
       icon: Layers3,
@@ -48,18 +48,18 @@ export default async function HomePage({
         </p>
         <div className="mt-9 flex flex-col gap-3 sm:flex-row">
           <Button asChild size="lg">
-            <Link href="/dashboard">
+            <Link href="/projects">
               {t("primaryCta")}
               <ArrowRight className="size-4" />
             </Link>
           </Button>
           <Button asChild size="lg" variant="outline">
-            <Link href="/sign-up">{t("secondaryCta")}</Link>
+            <a href="#stack">{t("secondaryCta")}</a>
           </Button>
         </div>
       </section>
 
-      <section className="mx-auto max-w-6xl px-5 pb-24">
+      <section id="stack" className="mx-auto max-w-6xl px-5 pb-24">
         <h2 className="mb-8 text-center text-2xl font-semibold tracking-tight">
           {t("stackTitle")}
         </h2>

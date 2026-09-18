@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
+import { z } from "zod";
 
-import { signUpSchema } from "@/features/auth/schemas";
 import {
   createValidationErrorMap,
   type ValidationTranslationKey,
@@ -32,7 +32,12 @@ const translate = ((
 
 describe("createValidationErrorMap", () => {
   it("localizes field constraints without changing the shared schema", () => {
-    const result = signUpSchema.safeParse(
+    const schema = z.object({
+      name: z.string().min(2),
+      email: z.string().email(),
+      password: z.string().min(8),
+    });
+    const result = schema.safeParse(
       { name: "A", email: "invalid", password: "short" },
       { error: createValidationErrorMap(translate) },
     );

@@ -1,24 +1,16 @@
 import { getTranslations, setRequestLocale } from "next-intl/server";
 
-import { auth } from "@/auth";
-import { ProjectManager } from "@/components/dashboard/project-manager";
+import { ProjectManager } from "@/components/projects/project-manager";
 import { getRouteLocale } from "@/i18n/params";
 
-export default async function DashboardPage({
+export default async function ProjectsPage({
   params,
 }: {
   params: Promise<{ locale: string }>;
 }) {
   const locale = await getRouteLocale(params);
   setRequestLocale(locale);
-  const [session, t] = await Promise.all([
-    auth(),
-    getTranslations("Dashboard"),
-  ]);
-
-  if (!session?.user) return null;
-
-  const displayName = session.user.name ?? session.user.email ?? "user";
+  const t = await getTranslations("Projects");
 
   return (
     <section className="mx-auto max-w-5xl px-5 py-16">
@@ -26,7 +18,7 @@ export default async function DashboardPage({
         {t("eyebrow")}
       </p>
       <h1 className="mt-3 text-4xl font-semibold tracking-tight sm:text-5xl">
-        {t("title", { name: displayName })}
+        {t("title")}
       </h1>
       <p className="text-muted-foreground mt-4 mb-10 max-w-2xl text-lg leading-8">
         {t("description")}

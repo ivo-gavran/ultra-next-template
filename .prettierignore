@@ -1,6 +1,6 @@
 .next
 coverage
-drizzle/meta
 node_modules
 pnpm-lock.yaml
+public/mockServiceWorker.js
 storybook-static

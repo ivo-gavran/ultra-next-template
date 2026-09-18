@@ -1,15 +1,13 @@
 import { Atom } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 
-import { auth } from "@/auth";
-import { SignOutButton } from "@/components/auth/sign-out-button";
 import { LocaleSwitcher } from "@/components/layout/locale-switcher";
 import { ThemeToggle } from "@/components/layout/theme-toggle";
 import { Button } from "@/components/ui/button";
 import { Link } from "@/i18n/navigation";
 
 export async function SiteHeader() {
-  const [session, t] = await Promise.all([auth(), getTranslations("Nav")]);
+  const t = await getTranslations("Nav");
 
   return (
     <header className="border-border/70 bg-background/85 sticky top-0 z-40 border-b backdrop-blur-xl">
@@ -33,18 +31,9 @@ export async function SiteHeader() {
           >
             <Link href="/">{t("home")}</Link>
           </Button>
-          {session?.user ? (
-            <>
-              <Button asChild variant="ghost" size="sm">
-                <Link href="/dashboard">{t("dashboard")}</Link>
-              </Button>
-              <SignOutButton />
-            </>
-          ) : (
-            <Button asChild variant="outline" size="sm">
-              <Link href="/sign-in">{t("signIn")}</Link>
-            </Button>
-          )}
+          <Button asChild variant="outline" size="sm">
+            <Link href="/projects">{t("projects")}</Link>
+          </Button>
           <LocaleSwitcher />
           <ThemeToggle />
         </nav>

@@ -2,19 +2,19 @@ import { render, screen } from "@testing-library/react";
 import { NextIntlClientProvider } from "next-intl";
 import { describe, expect, it } from "vitest";
 
-import bsMessages from "../../../../../messages/bs.json";
-import enMessages from "../../../../../messages/en.json";
+import bsMessages from "../../../../messages/bs.json";
+import enMessages from "../../../../messages/en.json";
 
-import DashboardLoading from "@/app/[locale]/(protected)/dashboard/loading";
+import ProjectsLoading from "@/app/[locale]/projects/loading";
 
-describe("DashboardLoading", () => {
+describe("ProjectsLoading", () => {
   it("announces the localized loading state", () => {
     render(
       <NextIntlClientProvider
         locale="bs"
         messages={bsMessages as unknown as typeof enMessages}
       >
-        <DashboardLoading />
+        <ProjectsLoading />
       </NextIntlClientProvider>,
     );
 

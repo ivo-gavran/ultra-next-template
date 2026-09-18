@@ -1,5 +1,6 @@
 import type { z } from "zod";
 
+import { publicEnv } from "@/config/public-env";
 import { AppError, ErrorCode } from "@/lib/errors";
 
 type ErrorBody = {
@@ -15,11 +16,17 @@ type RequestOptions<TSchema extends z.ZodType> = Omit<RequestInit, "body"> & {
   body?: unknown;
 };
 
+export function getApiUrl(path: string) {
+  const baseUrl = publicEnv.NEXT_PUBLIC_API_URL.replace(/\/$/, "");
+  const normalizedPath = path.replace(/^\//, "");
+  return `${baseUrl}/${normalizedPath}`;
+}
+
 export async function apiRequest<TSchema extends z.ZodType>(
   path: string,
   { schema, body, headers, ...init }: RequestOptions<TSchema>,
 ): Promise<z.infer<TSchema>> {
-  const response = await fetch(path, {
+  const response = await fetch(getApiUrl(path), {
     ...init,
     ...(body === undefined ? {} : { body: JSON.stringify(body) }),
     headers: {
