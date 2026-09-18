@@ -1,101 +1,92 @@
 # Ultra Next Template
 
-A production-minded Next.js starter with a modular developer experience.
+A production-minded Next.js frontend starter with a typed external API boundary.
 
-The goal is simple: clone it and start on product code. Authentication, protected routes, PostgreSQL, validated API calls, client-side query state, themes, translations, component documentation, tests and CI are already connected.
+The goal is simple: clone it and start on product UI. Routing, query state, validated API responses, forms, themes, translations, component documentation, tests and CI are already connected without prescribing a backend, database or authentication provider.
 
 ## What is included
 
-| Area                 | Stack                                                                                     |
-| -------------------- | ----------------------------------------------------------------------------------------- |
-| Framework            | Next.js 16 App Router, React 19, strict TypeScript                                        |
-| Authentication       | Auth.js v5, credentials provider, JWT sessions, protected server layouts and API handlers |
-| Database             | PostgreSQL, Drizzle ORM, Drizzle Kit and a committed initial migration                    |
-| Data fetching        | A typed `fetch` client with runtime Zod validation and TanStack Query                     |
-| Forms                | React Hook Form and shared Zod schemas                                                    |
-| UI                   | shadcn/ui (Radix), Tailwind CSS v4, semantic design tokens and dark mode                  |
-| Internationalization | `next-intl`, locale-prefixed routing, English and Bosnian                                 |
-| Quality              | ESLint, Prettier, Vitest, Playwright, Storybook and accessibility checks                  |
-| Workflow             | pnpm, Lefthook, Commitlint, Docker Compose and GitHub Actions                             |
+| Area                 | Stack                                                                       |
+| -------------------- | --------------------------------------------------------------------------- |
+| Framework            | Next.js 16 App Router, React 19 and strict TypeScript                       |
+| API integration      | Typed `fetch`, runtime Zod validation and an environment-based API URL      |
+| Data fetching        | TanStack Query with reusable keys, pagination and optimistic-update helpers |
+| Development API      | MSW browser mocks that keep the template runnable without a backend         |
+| Forms                | React Hook Form and shared Zod schemas                                      |
+| UI                   | shadcn/ui (Radix), Tailwind CSS v4, semantic design tokens and dark mode    |
+| Internationalization | `next-intl`, locale-prefixed routing, English and Bosnian                   |
+| Quality              | ESLint, Prettier, Vitest, Playwright, Storybook and accessibility checks    |
+| Workflow             | pnpm, Lefthook, Commitlint and GitHub Actions                               |
 
-The dashboard includes a small project CRUD flow that demonstrates the full path from an authenticated UI mutation through a protected route handler to an owner-scoped database query.
+The Projects page demonstrates the complete frontend path from a validated form through a TanStack Query mutation to a typed external REST contract. Development and E2E use the same contract through MSW; production points it at your API.
 
 ## Quick start
 
-Requirements: Node.js 24+, pnpm 11+ and Docker.
+Requirements: Node.js 24+ and pnpm 11+.
 
 ```bash
 pnpm install
 cp .env.example .env.local
-```
-
-Replace `AUTH_SECRET` in `.env.local` with a generated value:
-
-```bash
-openssl rand -base64 32
-```
-
-Start PostgreSQL and apply the migration:
-
-```bash
-docker compose up -d
-pnpm db:migrate
-```
-
-Start the app:
-
-```bash
 pnpm dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000), create an account and visit the protected dashboard.
+Open [http://localhost:3000](http://localhost:3000). The development mock is enabled by default, so the Projects demo works without any additional service.
 
 ## Project structure
 
 ```text
 src/
-├── app/                    # Pages, route groups and API route handlers
-│   ├── [locale]/           # Localized public/auth/protected pages
-│   └── api/                # Auth, registration and project endpoints
+├── app/                    # Localized App Router pages and route fallbacks
 ├── components/
-│   ├── auth/               # Auth forms and session actions
-│   ├── dashboard/          # Feature UI
 │   ├── layout/             # Header, locale and theme controls
-│   ├── providers/          # Client-only app providers
+│   ├── projects/           # Example feature UI
+│   ├── providers/          # Query, theme, toast and mock providers
 │   └── ui/                 # Reusable design-system primitives
-├── config/                 # Validated server environment
-├── db/                     # Drizzle client, schema and relations
-├── features/               # Schemas, API functions and query hooks
+├── config/                 # Validated public environment
+├── features/               # API functions, schemas and query hooks
 ├── i18n/                   # Routing, navigation and request config
-├── lib/                    # Framework-neutral utilities
-└── test/                   # Shared test setup
+├── lib/                    # API, errors, queries, validation and utilities
+├── mocks/                  # Development API contract handlers
+└── test/                   # Shared unit-test setup
 ```
 
-The boundaries intentionally mirror the reference Expo starter: app composition stays thin, features own their schemas and data operations, reusable UI stays independent, and environment/database code remains server-only.
+Application composition stays thin, features own their schemas and data operations, reusable UI stays independent, and backend-specific decisions stay outside the template.
 
-UI primitives are source-owned shadcn/ui components configured through `components.json`. The starter keeps the standard shadcn API and semantic tokens while applying its own Ultra color theme. Storybook intentionally documents only customized primitives, theme foundations and feature-level states instead of duplicating the full shadcn catalog.
+UI primitives are source-owned shadcn/ui components configured through `components.json`. Storybook documents customized primitives, theme foundations and feature-level states instead of duplicating the complete shadcn catalog.
 
-## Authentication and authorization
+## External API contract
 
-- Registration validates input, checks email uniqueness and stores a bcrypt hash with cost 12.
-- The Credentials provider compares the hash and issues a JWT session.
-- The protected route group checks `auth()` in a server layout before rendering.
-- Every protected API handler checks the session again.
-- Project queries include `ownerId`, preventing cross-account reads and deletes.
-- Auth.js adapter tables are present, so OAuth or magic-link providers can be added without redesigning persistence.
+Configure the backend URL at build time:
 
-For a public production app, add email verification, password reset, rate limiting and abuse monitoring before enabling open registration.
+```bash
+NEXT_PUBLIC_API_URL=https://api.example.com
+NEXT_PUBLIC_API_MOCKING=disabled
+```
 
-## API pattern
+Feature API functions pass relative paths to `apiRequest`. The client resolves them against `NEXT_PUBLIC_API_URL`, rejects non-success responses with a structured `AppError`, and validates successful JSON at runtime with the supplied Zod schema.
 
-Route handlers return one of two envelopes:
+The example expects one of two envelopes:
 
 ```ts
 { data: T }
 { error: { code: string; message: string; details?: unknown } }
 ```
 
-`apiRequest` rejects non-2xx responses with a structured `AppError` and parses successful responses through the supplied Zod schema. Stable error codes are mapped to localized user messages, so server copy does not leak directly into the UI. TypeScript types and runtime data therefore cannot silently drift apart.
+Adapt `src/lib/api/client.ts` if your backend uses a different envelope, authentication header or credential strategy. Authentication is intentionally not bundled: connect the session or token mechanism owned by your actual backend or identity provider.
+
+`NEXT_PUBLIC_*` values are embedded into the browser bundle during `next build`. Set them in the build environment, not only when starting the server.
+
+## Development mocks
+
+With `NEXT_PUBLIC_API_MOCKING=enabled`, `ApiMockProvider` starts the MSW service worker before rendering query consumers. Handlers in `src/mocks/handlers.ts` implement the same schemas and URLs as the real feature API.
+
+Mocks are for local development and browser tests. Production builds should use:
+
+```bash
+NEXT_PUBLIC_API_MOCKING=disabled
+```
+
+When the contract changes, update the feature schema, API function and mock handler together. Runtime parsing then catches backend drift before malformed data reaches the UI.
 
 ## Query conventions
 
@@ -107,7 +98,6 @@ const projectQueryFactory = createEntityQueryFactory("projects");
 export const projectKeys = projectQueryFactory.keys;
 
 export const projectQueries = {
-  keys: projectKeys,
   list: () =>
     projectQueryFactory.list(
       {},
@@ -125,15 +115,15 @@ const projects = useQuery(projectQueries.list());
 await queryClient.invalidateQueries({ queryKey: projectKeys.lists() });
 ```
 
-The factory standardizes the key hierarchy for finite lists, infinite lists and details while returning TanStack's native `queryOptions` and `infiniteQueryOptions` objects. Consumers can therefore use every standard TanStack option without learning a replacement API, and invalidate at any scope. `src/lib/query` also includes cursor and page-number pagination helpers plus an optimistic update utility with rollback support. The project delete mutation demonstrates the complete optimistic lifecycle. Loading, error/retry and empty states use shared accessible UI primitives.
+The factory standardizes the key hierarchy for finite lists, infinite lists and details while returning native `queryOptions` and `infiniteQueryOptions` objects. Pagination helpers and optimistic updates with rollback live in `src/lib/query`. Loading, error/retry and empty states use shared accessible UI primitives.
 
-TanStack Query DevTools are mounted with the shared query client and are available automatically in development builds. The DevTools package renders nothing in production.
+TanStack Query DevTools are mounted automatically in development and render nothing in production.
 
-## Route resilience
+## Error and route resilience
 
-App Router failures use application-owned fallbacks instead of the framework defaults. Localized route errors provide a retry action and an optional server error reference, unknown URLs render a locale-aware 404 page, and the protected dashboard has an accessible streaming loading state. Root-layout failures fall back to a standalone global error document.
+Stable external error codes map to localized user messages instead of displaying backend copy directly. Query and mutation failures flow through the shared toast provider, while features can suppress the global notification when they render an inline retry state.
 
-Unexpected route and global errors pass through `reportAppError` in `src/lib/errors/reporting.ts`. It currently writes structured context to the console and provides one integration point for adding an external error-reporting service later.
+App Router failures use application-owned fallbacks. Localized route errors provide retry actions and optional error references, unknown URLs render a locale-aware 404, and the Projects route has an accessible streaming loading state. Unexpected route errors pass through `reportAppError`, the integration point for a production reporting service.
 
 ## Commands
 
@@ -146,25 +136,22 @@ Unexpected route and global errors pass through `reportAppError` in `src/lib/err
 | `pnpm typecheck`       | Run strict TypeScript checks          |
 | `pnpm test`            | Run the Vitest suite once             |
 | `pnpm test:coverage`   | Generate test coverage                |
-| `pnpm test:e2e:local`  | Start the test database and run E2E   |
-| `pnpm test:e2e`        | Run E2E against an available test DB  |
+| `pnpm test:e2e`        | Run Playwright browser tests          |
 | `pnpm test:e2e:ui`     | Open Playwright's interactive runner  |
 | `pnpm storybook`       | Start Storybook on port 6006          |
 | `pnpm build-storybook` | Build static Storybook output         |
-| `pnpm db:generate`     | Generate SQL from schema changes      |
-| `pnpm db:migrate`      | Apply committed migrations            |
-| `pnpm db:studio`       | Open Drizzle Studio                   |
 | `pnpm format`          | Format the repository                 |
 
-## Adding a database change
+## End-to-end tests
 
-1. Edit `src/db/schema.ts`.
-2. Run `pnpm db:generate`.
-3. Review the generated SQL in `drizzle/`.
-4. Run `pnpm db:migrate`.
-5. Commit both schema and migration changes.
+Install Chromium once, then run the suite:
 
-Use `db:push` only for disposable local experimentation; committed environments should use migrations.
+```bash
+pnpm exec playwright install chromium
+pnpm test:e2e
+```
+
+Playwright starts Next.js on port `3100` with the external API contract mocked in the browser. Tests cover locale routing, localized 404 handling and project CRUD without Docker, a database or a live backend. Failure traces, screenshots and videos are written to ignored local report directories; CI uploads them only when the E2E job fails.
 
 ## Adding a locale
 
@@ -173,28 +160,13 @@ Use `db:push` only for disposable local experimentation; committed environments 
 3. Update the locale switcher if you want more than the included two-language toggle.
 4. Run `pnpm typecheck` and `pnpm test` to verify message keys and ICU arguments against the English source locale.
 
-`next-intl` derives namespaces, message keys, interpolation arguments and supported locale types from `messages/en.json` and `src/i18n/routing.ts`. English is therefore the canonical message schema; every other locale must preserve the same key tree and argument names.
+`next-intl` derives namespaces, message keys, interpolation arguments and supported locale types from `messages/en.json` and `src/i18n/routing.ts`. English is the canonical message schema; every locale must preserve the same key tree and argument names.
 
-## CI and local hooks
+## CI and deployment
 
-GitHub Actions verifies formatting, linting, types, unit tests, Storybook, the production build and browser-level E2E tests against PostgreSQL. Lefthook runs the fast static checks before a commit, while Commitlint enforces Conventional Commits for commit messages.
+GitHub Actions verifies formatting, linting, types, unit tests, Storybook, the production build and browser-level E2E tests. Lefthook runs fast static checks before a commit, while Commitlint enforces Conventional Commits.
 
-## End-to-end tests
-
-Install the Chromium browser once, then run the local E2E workflow:
-
-```bash
-pnpm exec playwright install chromium
-pnpm test:e2e:local
-```
-
-The local workflow starts an ephemeral PostgreSQL container on port `5433`. Playwright applies committed Drizzle migrations, clears application tables before every test and starts Next.js on port `3100` with E2E-only environment values. The suite exercises locale routing, protected-route redirects, localized 404 handling and the complete sign-up, sign-in, sign-out and project CRUD path without mocking the application API.
-
-Use `pnpm test:e2e:ui` after the database is running for Playwright's interactive runner. Failure traces, screenshots and videos are written to ignored local report directories; CI uploads them as an artifact only when the E2E job fails.
-
-## Deployment
-
-Provide `DATABASE_URL`, `AUTH_SECRET` and `AUTH_TRUST_HOST` to the runtime environment, apply migrations as a release step, then deploy with any Node.js-compatible Next.js host. Never commit `.env.local` or use the Docker Compose credentials outside local development.
+Set `NEXT_PUBLIC_API_URL` and `NEXT_PUBLIC_API_MOCKING=disabled` in the production build environment, then deploy to any Node.js-compatible Next.js host. Configure CORS and the chosen authentication mechanism on the external backend for the deployed frontend origin.
 
 ## License
 

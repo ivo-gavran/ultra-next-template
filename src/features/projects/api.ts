@@ -10,11 +10,11 @@ import {
 import { apiRequest } from "@/lib/api/client";
 
 export function getProjects() {
-  return apiRequest("/api/projects", { schema: projectsResponseSchema });
+  return apiRequest("/projects", { schema: projectsResponseSchema });
 }
 
 export function createProject(input: CreateProjectInput) {
-  return apiRequest("/api/projects", {
+  return apiRequest("/projects", {
     method: "POST",
     body: input,
     schema: projectResponseSchema,
@@ -22,7 +22,7 @@ export function createProject(input: CreateProjectInput) {
 }
 
 export function deleteProject(id: string) {
-  return apiRequest(`/api/projects/${id}`, {
+  return apiRequest(`/projects/${id}`, {
     method: "DELETE",
     schema: z.object({ data: z.object({ id: z.string().uuid() }) }),
   });

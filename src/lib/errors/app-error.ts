@@ -1,7 +1,5 @@
 export const ErrorCode = {
   CreateFailed: "CREATE_FAILED",
-  EmailTaken: "EMAIL_TAKEN",
-  InvalidCredentials: "INVALID_CREDENTIALS",
   InvalidResponse: "INVALID_RESPONSE",
   NotFound: "NOT_FOUND",
   RequestFailed: "REQUEST_FAILED",

@@ -2,8 +2,6 @@ import { ErrorCode, isAppError } from "@/lib/errors/app-error";
 
 export const errorMessageKeys = {
   [ErrorCode.CreateFailed]: "createFailed",
-  [ErrorCode.EmailTaken]: "emailTaken",
-  [ErrorCode.InvalidCredentials]: "invalidCredentials",
   [ErrorCode.InvalidResponse]: "invalidResponse",
   [ErrorCode.NotFound]: "notFound",
   [ErrorCode.RequestFailed]: "requestFailed",

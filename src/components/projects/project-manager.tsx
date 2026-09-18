@@ -4,7 +4,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useLocale, useTranslations } from "next-intl";
 import { useForm } from "react-hook-form";
 
-import { ProjectCard } from "@/components/dashboard/project-card";
+import { ProjectCard } from "@/components/projects/project-card";
 import {
   EmptyState,
   ErrorState,
@@ -34,7 +34,7 @@ import { useValidationErrorMap } from "@/lib/validation/use-validation-error-map
 
 export function ProjectManager() {
   const locale = useLocale();
-  const t = useTranslations("Dashboard");
+  const t = useTranslations("Projects");
   const projects = useProjects();
   const createMutation = useCreateProject();
   const deleteMutation = useDeleteProject();

@@ -12,6 +12,7 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "coverage/**",
+    "public/mockServiceWorker.js",
     "storybook-static/**",
     "next-env.d.ts",
   ]),

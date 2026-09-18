@@ -10,21 +10,23 @@ afterEach(() => {
 
 describe("apiRequest", () => {
   it("returns a response only after schema validation", async () => {
-    vi.stubGlobal(
-      "fetch",
-      vi.fn().mockResolvedValue(
-        new Response(JSON.stringify({ data: { id: "project-1" } }), {
-          status: 200,
-          headers: { "Content-Type": "application/json" },
-        }),
-      ),
+    const fetchMock = vi.fn().mockResolvedValue(
+      new Response(JSON.stringify({ data: { id: "project-1" } }), {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      }),
     );
+    vi.stubGlobal("fetch", fetchMock);
 
-    const result = await apiRequest("/api/projects", {
+    const result = await apiRequest("/projects", {
       schema: z.object({ data: z.object({ id: z.string() }) }),
     });
 
     expect(result.data.id).toBe("project-1");
+    expect(fetchMock).toHaveBeenCalledWith(
+      "https://api.example.test/projects",
+      expect.objectContaining({ headers: { Accept: "application/json" } }),
+    );
   });
 
   it("throws a structured error for unsuccessful requests", async () => {
@@ -40,7 +42,7 @@ describe("apiRequest", () => {
       ),
     );
 
-    const request = apiRequest("/api/projects", {
+    const request = apiRequest("/projects", {
       schema: z.object({ data: z.array(z.unknown()) }),
     });
 
@@ -62,7 +64,7 @@ describe("apiRequest", () => {
       ),
     );
 
-    const request = apiRequest("/api/projects", {
+    const request = apiRequest("/projects", {
       schema: z.object({ data: z.object({ id: z.string() }) }),
     });
 

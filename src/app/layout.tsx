@@ -6,7 +6,7 @@ import "./globals.css";
 export const metadata: Metadata = {
   title: { default: "Ultra Next", template: "%s · Ultra Next" },
   description:
-    "A production-minded Next.js starter with auth, PostgreSQL, Drizzle, i18n and a complete quality toolchain.",
+    "A production-minded Next.js frontend starter with typed API boundaries, query state, i18n and a complete quality toolchain.",
 };
 
 export default async function RootLayout({
