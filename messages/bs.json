@@ -13,7 +13,7 @@
     "secondaryCta": "Istraži tehnologije",
     "stackTitle": "Svaki sloj ima jasnu granicu",
     "apiTitle": "Tipizovana API granica",
-    "apiDescription": "Mali fetch klijent sa Zod validacijom u runtimeu i zamjenjivim URL-om vanjskog API-ja.",
+    "apiDescription": "Axios klijent spreman za auth, sa Zod validacijom u runtimeu i zamjenjivim URL-om vanjskog API-ja.",
     "clientTitle": "Korisničko iskustvo",
     "clientDescription": "TanStack Query, pristupačne UI primitive, tamna tema i tipizovane forme.",
     "qualityTitle": "Kvalitet od početka",
@@ -21,9 +21,13 @@
   },
   "Errors": {
     "createFailed": "Projekat nije moguće kreirati. Pokušajte ponovo.",
+    "forbidden": "Nemate potrebne ovlasti za ovu radnju.",
     "invalidResponse": "Server je vratio neočekivan odgovor.",
+    "network": "API nije dostupan. Provjerite internet konekciju.",
     "notFound": "Traženi sadržaj nije pronađen.",
+    "requestAborted": "Zahtjev je otkazan.",
     "requestFailed": "Zahtjev nije uspio. Pokušajte ponovo.",
+    "requestTimeout": "Zahtjev traje predugo. Pokušajte ponovo.",
     "unauthorized": "Nemate dozvolu za ovu radnju.",
     "unexpected": "Nešto nije u redu. Pokušajte ponovo.",
     "validation": "Provjerite unesene podatke."

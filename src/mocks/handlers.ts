@@ -49,7 +49,7 @@ export const handlers = [
     return HttpResponse.json({ data: project }, { status: 201 });
   }),
 
-  http.delete(getApiUrl("/projects/:id"), ({ params }) => {
+  http.delete(`${getApiUrl("/projects")}/:id`, ({ params }) => {
     const project = projects.find(({ id }) => id === params.id);
 
     if (!project) {

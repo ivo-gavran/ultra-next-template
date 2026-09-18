@@ -9,7 +9,7 @@ The goal is simple: clone it and start on product UI. Routing, query state, vali
 | Area                 | Stack                                                                       |
 | -------------------- | --------------------------------------------------------------------------- |
 | Framework            | Next.js 16 App Router, React 19 and strict TypeScript                       |
-| API integration      | Typed `fetch`, runtime Zod validation and an environment-based API URL      |
+| API integration      | Typed Axios client, strict Zod validation and auth-ready request hooks      |
 | Data fetching        | TanStack Query with reusable keys, pagination and optimistic-update helpers |
 | Development API      | MSW browser mocks that keep the template runnable without a backend         |
 | Forms                | React Hook Form and shared Zod schemas                                      |
@@ -63,7 +63,16 @@ NEXT_PUBLIC_API_URL=https://api.example.com
 NEXT_PUBLIC_API_MOCKING=disabled
 ```
 
-Feature API functions pass relative paths to `apiRequest`. The client resolves them against `NEXT_PUBLIC_API_URL`, rejects non-success responses with a structured `AppError`, and validates successful JSON at runtime with the supplied Zod schema.
+Feature API functions use the shared `apiClient`. It resolves relative paths against `NEXT_PUBLIC_API_URL`, supports path and query parameters, rejects transport and HTTP failures with a structured `AppError`, and strictly validates successful JSON with the supplied Zod schema.
+
+```ts
+return apiClient.get("/projects/:id", {
+  pathParams: { id },
+  query: { include: "members" },
+  schema: projectResponseSchema,
+  signal,
+});
+```
 
 The example expects one of two envelopes:
 
@@ -72,7 +81,26 @@ The example expects one of two envelopes:
 { error: { code: string; message: string; details?: unknown } }
 ```
 
-Adapt `src/lib/api/client.ts` if your backend uses a different envelope, authentication header or credential strategy. Authentication is intentionally not bundled: connect the session or token mechanism owned by your actual backend or identity provider.
+The default client has a 15-second timeout and supports empty `204` responses. TanStack Query passes its `AbortSignal` through feature API functions, so canceled queries also cancel their network requests.
+
+Create another client when the application needs cookies, dynamic headers or token authentication:
+
+```ts
+const authenticatedApi = createApiClient({
+  baseURL: publicEnv.NEXT_PUBLIC_API_URL,
+  withCredentials: true,
+  getHeaders: () => ({ "X-App-Version": appVersion }),
+  auth: {
+    getAccessToken,
+    refreshSession,
+    onUnauthorized,
+  },
+});
+```
+
+Only one `refreshSession` call runs when concurrent requests receive `401`; waiting requests retry once with the latest token. Use `skipAuth` for public endpoints and `skipAuthRefresh` for auth endpoints that must never enter the refresh flow. The hooks intentionally do not prescribe an authentication provider or token storage mechanism.
+
+Adapt the error-envelope parsing in `src/lib/api/client.ts` if your backend uses a different contract.
 
 `NEXT_PUBLIC_*` values are embedded into the browser bundle during `next build`. Set them in the build environment, not only when starting the server.
 
@@ -102,7 +130,7 @@ export const projectQueries = {
     projectQueryFactory.list(
       {},
       {
-        queryFn: async () => (await getProjects()).data,
+        queryFn: async ({ signal }) => (await getProjects({ signal })).data,
       },
     ),
 };

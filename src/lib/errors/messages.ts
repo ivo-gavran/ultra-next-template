@@ -2,9 +2,13 @@ import { ErrorCode, isAppError } from "@/lib/errors/app-error";
 
 export const errorMessageKeys = {
   [ErrorCode.CreateFailed]: "createFailed",
+  [ErrorCode.Forbidden]: "forbidden",
   [ErrorCode.InvalidResponse]: "invalidResponse",
   [ErrorCode.NotFound]: "notFound",
+  [ErrorCode.Network]: "network",
+  [ErrorCode.RequestAborted]: "requestAborted",
   [ErrorCode.RequestFailed]: "requestFailed",
+  [ErrorCode.RequestTimeout]: "requestTimeout",
   [ErrorCode.Unauthorized]: "unauthorized",
   [ErrorCode.Unexpected]: "unexpected",
   [ErrorCode.Validation]: "validation",
