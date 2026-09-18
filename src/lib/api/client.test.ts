@@ -14,6 +14,11 @@ import { AxiosError, type AxiosAdapter } from "axios";
 
 import { createApiClient } from "@/lib/api/client";
 import { AppError, ErrorCode } from "@/lib/errors";
+import { reportAppError } from "@/lib/errors/reporting";
+
+vi.mock("@/lib/errors/reporting", () => ({
+  reportAppError: vi.fn(),
+}));
 
 const baseURL = "https://api.example.test";
 const server = setupServer();
@@ -21,6 +26,7 @@ const server = setupServer();
 beforeAll(() => server.listen({ onUnhandledRequest: "error" }));
 afterEach(() => {
   server.resetHandlers();
+  vi.clearAllMocks();
   vi.restoreAllMocks();
 });
 afterAll(() => server.close());
@@ -99,6 +105,14 @@ describe("createApiClient", () => {
     await expect(request).rejects.toMatchObject({
       code: ErrorCode.InvalidResponse,
     });
+    expect(reportAppError).toHaveBeenCalledWith(
+      expect.objectContaining({ code: ErrorCode.InvalidResponse }),
+      {
+        source: "api",
+        operation: "GET /projects",
+        metadata: { code: ErrorCode.InvalidResponse, status: 200 },
+      },
+    );
   });
 
   it("supports empty 204 responses", async () => {

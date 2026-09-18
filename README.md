@@ -151,7 +151,29 @@ TanStack Query DevTools are mounted automatically in development and render noth
 
 Stable external error codes map to localized user messages instead of displaying backend copy directly. Query and mutation failures flow through the shared toast provider, while features can suppress the global notification when they render an inline retry state.
 
-App Router failures use application-owned fallbacks. Localized route errors provide retry actions and optional error references, unknown URLs render a locale-aware 404, and the Projects route has an accessible streaming loading state. Unexpected route errors pass through `reportAppError`, the integration point for a production reporting service.
+App Router failures use application-owned fallbacks. Localized route errors provide retry actions and optional error references, unknown URLs render a locale-aware 404, and the Projects route has an accessible streaming loading state.
+
+## Observability
+
+Unexpected API, query, mutation, route-boundary and server-rendering failures flow through the provider-neutral `reportAppError` pipeline. Expected operational failures such as cancellation, validation, unauthorized, forbidden and not-found responses stay out of error reporting unless they unexpectedly reach an error boundary.
+
+`src/instrumentation.ts` uses the native Next.js `onRequestError` hook for server failures. Client error boundaries and TanStack Query use the same contract. The same error object is reported only once when it passes through multiple layers.
+
+Configure a production provider once in its client and server instrumentation entry points:
+
+```ts
+configureErrorReporter({
+  captureException({ error, context, timestamp }) {
+    monitoring.captureException(error, { context, timestamp });
+  },
+});
+```
+
+Until an adapter is configured, reports use a console reporter that remains useful in local development and platform logs.
+
+The pipeline creates a safe error copy without Axios causes or application details, redacts metadata keys such as tokens, cookies, passwords and API keys, handles circular metadata, and contains reporter failures. Request headers, bodies, query values and concrete request URLs are never added automatically.
+
+Set `meta: { suppressErrorReport: true }` on an intentionally handled TanStack query or mutation when it should not reach the reporter. This is separate from `suppressErrorToast`.
 
 ## Commands
 

@@ -28,7 +28,7 @@ describe("LocaleError", () => {
 
     await waitFor(() =>
       expect(reportAppError).toHaveBeenCalledWith(error, {
-        boundary: "route",
+        source: "route-boundary",
       }),
     );
     expect(screen.getByText("Error reference: error-123")).toBeInTheDocument();

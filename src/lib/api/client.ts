@@ -9,6 +9,7 @@ import type { z } from "zod";
 
 import { publicEnv } from "@/config/public-env";
 import { AppError, ErrorCode, isAppError } from "@/lib/errors";
+import { reportAppError } from "@/lib/errors/reporting";
 
 const DEFAULT_TIMEOUT_MS = 15_000;
 
@@ -140,6 +141,15 @@ function buildPath(path: string, pathParams?: ApiPathParams) {
   });
 }
 
+function reportApiError(error: AppError, method: Method, path: string) {
+  const resource = path.split("?")[0]?.split("/").filter(Boolean)[0];
+  void reportAppError(error, {
+    source: "api",
+    operation: `${method.toUpperCase()}${resource ? ` /${resource}` : ""}`,
+    metadata: { code: error.code, status: error.status },
+  });
+}
+
 export function createApiClient({
   baseURL,
   timeout = DEFAULT_TIMEOUT_MS,
@@ -245,27 +255,36 @@ export function createApiClient({
       ...config
     }: ApiRequestOptions<TSchema, TBody> = {},
   ): Promise<ApiResponse<TSchema>> {
-    const response = await instance.request<unknown>({
-      ...config,
-      method,
-      url: buildPath(path, pathParams),
-      params: query,
-      data: body,
-      skipAuth,
-      skipAuthRefresh,
-    } as InternalRequestConfig);
+    let response;
+    try {
+      response = await instance.request<unknown>({
+        ...config,
+        method,
+        url: buildPath(path, pathParams),
+        params: query,
+        data: body,
+        skipAuth,
+        skipAuthRefresh,
+      } as InternalRequestConfig);
+    } catch (error) {
+      const appError = toAppError(error);
+      reportApiError(appError, method, path);
+      throw appError;
+    }
 
     const payload = response.data === "" ? undefined : response.data;
     if (!schema) return undefined as ApiResponse<TSchema>;
 
     const parsed = schema.safeParse(payload);
     if (!parsed.success) {
-      throw new AppError({
+      const error = new AppError({
         code: ErrorCode.InvalidResponse,
         message: "The server returned an unexpected response.",
         status: response.status,
         details: parsed.error.flatten(),
       });
+      reportApiError(error, method, path);
+      throw error;
     }
 
     return parsed.data as ApiResponse<TSchema>;
