@@ -186,6 +186,12 @@ Add explicit CSP sources when integrating analytics, remote images, WebSockets o
 
 Dependabot checks npm packages and GitHub Actions weekly. CI audits the installed production dependency tree and fails when the package registry reports a known high or critical vulnerability. Registry availability does not make the quality pipeline fail. Enable GitHub's dependency graph and Dependabot security updates in the repository settings for additional alerts and automated security-fix pull requests.
 
+## Accessibility
+
+The application shell provides a localized skip link that moves keyboard focus directly to the main content. Form validation connects invalid controls to announced error messages, while loading states and notifications use appropriate live-region semantics.
+
+Playwright runs axe against the home, Projects and not-found routes across both locales and light and dark themes. Serious and critical WCAG A/AA violations fail the E2E job. Automated checks do not replace manual keyboard and screen-reader testing; they keep common regressions from reaching review unnoticed.
+
 ## Commands
 
 | Command                   | Purpose                               |
@@ -199,6 +205,7 @@ Dependabot checks npm packages and GitHub Actions weekly. CI audits the installe
 | `pnpm test`               | Run the Vitest suite once             |
 | `pnpm test:coverage`      | Generate test coverage                |
 | `pnpm test:e2e`           | Run Playwright browser tests          |
+| `pnpm test:e2e:a11y`      | Run browser accessibility checks      |
 | `pnpm test:e2e:ui`        | Open Playwright's interactive runner  |
 | `pnpm storybook`          | Start Storybook on port 6006          |
 | `pnpm build-storybook`    | Build static Storybook output         |
@@ -213,7 +220,7 @@ pnpm exec playwright install chromium
 pnpm test:e2e
 ```
 
-Playwright starts Next.js on port `3100` with the external API contract mocked in the browser. Tests cover locale routing, localized 404 handling and project CRUD without Docker, a database or a live backend. Failure traces, screenshots and videos are written to ignored local report directories; CI uploads them only when the E2E job fails.
+Playwright starts Next.js on port `3100` with the external API contract mocked in the browser. Tests cover locale routing, localized 404 handling, project CRUD, keyboard navigation and WCAG regression scans without Docker, a database or a live backend. Failure traces, screenshots and videos are written to ignored local report directories; CI uploads them only when the E2E job fails.
 
 ## Adding a locale
 

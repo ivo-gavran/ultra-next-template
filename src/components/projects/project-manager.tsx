@@ -70,10 +70,17 @@ export function ProjectManager() {
               id="project-name"
               placeholder={t("namePlaceholder")}
               aria-invalid={Boolean(errors.name)}
+              aria-describedby={errors.name ? "project-name-error" : undefined}
               {...register("name")}
             />
             {errors.name && (
-              <p className="text-destructive text-sm">{errors.name.message}</p>
+              <p
+                id="project-name-error"
+                role="alert"
+                className="text-destructive text-sm"
+              >
+                {errors.name.message}
+              </p>
             )}
           </div>
           <div className="space-y-2">
