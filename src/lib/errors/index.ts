@@ -4,3 +4,11 @@ export {
   getErrorMessageKey,
   type ErrorMessageKey,
 } from "@/lib/errors/messages";
+export {
+  configureErrorReporter,
+  reportAppError,
+  sanitizeReportMetadata,
+  type ErrorReport,
+  type ErrorReportContext,
+  type ErrorReporter,
+} from "@/lib/errors/reporting";

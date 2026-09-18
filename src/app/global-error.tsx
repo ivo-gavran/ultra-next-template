@@ -16,7 +16,7 @@ export default function GlobalError({
   retry: () => void;
 }) {
   useEffect(() => {
-    reportAppError(error, { boundary: "global" });
+    void reportAppError(error, { source: "global-boundary" });
   }, [error]);
 
   return (

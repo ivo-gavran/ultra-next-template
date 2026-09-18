@@ -5,8 +5,9 @@ import { createQueryClient } from "@/lib/query/client";
 describe("createQueryClient", () => {
   it("reports query errors globally", async () => {
     const notifyError = vi.fn();
+    const reportError = vi.fn();
     const error = new Error("Query failed");
-    const client = createQueryClient({ notifyError });
+    const client = createQueryClient({ notifyError, reportError });
 
     await expect(
       client.fetchQuery({
@@ -18,11 +19,16 @@ describe("createQueryClient", () => {
 
     expect(notifyError).toHaveBeenCalledOnce();
     expect(notifyError).toHaveBeenCalledWith(error);
+    expect(reportError).toHaveBeenCalledWith(error, {
+      source: "query",
+      operation: "projects",
+    });
   });
 
-  it("supports local query error UI without a duplicate toast", async () => {
+  it("supports local query error UI without suppressing observability", async () => {
     const notifyError = vi.fn();
-    const client = createQueryClient({ notifyError });
+    const reportError = vi.fn();
+    const client = createQueryClient({ notifyError, reportError });
 
     await expect(
       client.fetchQuery({
@@ -34,13 +40,16 @@ describe("createQueryClient", () => {
     ).rejects.toThrow("Query failed");
 
     expect(notifyError).not.toHaveBeenCalled();
+    expect(reportError).toHaveBeenCalledOnce();
   });
 
   it("reports mutation errors globally", async () => {
     const notifyError = vi.fn();
+    const reportError = vi.fn();
     const error = new Error("Mutation failed");
-    const client = createQueryClient({ notifyError });
+    const client = createQueryClient({ notifyError, reportError });
     const mutation = client.getMutationCache().build(client, {
+      mutationKey: ["projects", "create"],
       mutationFn: () => Promise.reject(error),
     });
 
@@ -48,5 +57,27 @@ describe("createQueryClient", () => {
 
     expect(notifyError).toHaveBeenCalledOnce();
     expect(notifyError).toHaveBeenCalledWith(error);
+    expect(reportError).toHaveBeenCalledWith(error, {
+      source: "mutation",
+      operation: "projects",
+    });
+  });
+
+  it("allows an intentionally handled error to opt out of reporting", async () => {
+    const notifyError = vi.fn();
+    const reportError = vi.fn();
+    const client = createQueryClient({ notifyError, reportError });
+
+    await expect(
+      client.fetchQuery({
+        queryKey: ["optional"],
+        queryFn: () => Promise.reject(new Error("Expected failure")),
+        retry: false,
+        meta: { suppressErrorReport: true, suppressErrorToast: true },
+      }),
+    ).rejects.toThrow("Expected failure");
+
+    expect(reportError).not.toHaveBeenCalled();
+    expect(notifyError).not.toHaveBeenCalled();
   });
 });

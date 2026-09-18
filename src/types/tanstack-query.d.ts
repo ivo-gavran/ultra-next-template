@@ -1,6 +1,7 @@
 import "@tanstack/react-query";
 
 type AppQueryMeta = Record<string, unknown> & {
+  suppressErrorReport?: boolean;
   suppressErrorToast?: boolean;
 };
 
