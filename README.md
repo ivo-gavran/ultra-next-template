@@ -16,7 +16,7 @@ The goal is simple: clone it and start on product UI. Routing, query state, vali
 | UI                   | shadcn/ui (Radix), Tailwind CSS v4, semantic design tokens and dark mode    |
 | Internationalization | `next-intl`, locale-prefixed routing, English and Bosnian                   |
 | Quality              | ESLint, Prettier, Vitest, Playwright, Storybook and accessibility checks    |
-| Security             | CSP, secure response headers and automated dependency review                |
+| Security             | CSP, secure response headers and automated dependency auditing              |
 | Workflow             | pnpm, Lefthook, Commitlint, Dependabot and GitHub Actions                   |
 
 The Projects page demonstrates the complete frontend path from a validated form through a TanStack Query mutation to a typed external REST contract. Development and E2E use the same contract through MSW; production points it at your API.
@@ -184,24 +184,25 @@ The default CSP intentionally uses `unsafe-inline` for Next.js scripts and style
 
 Add explicit CSP sources when integrating analytics, remote images, WebSockets or an external authentication provider. Cross-Origin-Opener-Policy is intentionally not enabled because it can break OAuth popup flows. Do not add secrets to `NEXT_PUBLIC_*` variables; Next.js embeds them in the client bundle.
 
-Dependabot checks npm packages and GitHub Actions weekly. Pull requests that introduce dependencies with known high or critical vulnerabilities fail the dependency review job. GitHub's dependency graph and Dependabot security updates must also be enabled in the repository settings.
+Dependabot checks npm packages and GitHub Actions weekly. CI audits the installed production dependency tree and fails when the package registry reports a known high or critical vulnerability. Registry availability does not make the quality pipeline fail. Enable GitHub's dependency graph and Dependabot security updates in the repository settings for additional alerts and automated security-fix pull requests.
 
 ## Commands
 
-| Command                | Purpose                               |
-| ---------------------- | ------------------------------------- |
-| `pnpm dev`             | Start the development server          |
-| `pnpm build`           | Create a production build             |
-| `pnpm lint`            | Run ESLint with zero warnings allowed |
-| `pnpm typegen`         | Generate Next.js and message types    |
-| `pnpm typecheck`       | Run strict TypeScript checks          |
-| `pnpm test`            | Run the Vitest suite once             |
-| `pnpm test:coverage`   | Generate test coverage                |
-| `pnpm test:e2e`        | Run Playwright browser tests          |
-| `pnpm test:e2e:ui`     | Open Playwright's interactive runner  |
-| `pnpm storybook`       | Start Storybook on port 6006          |
-| `pnpm build-storybook` | Build static Storybook output         |
-| `pnpm format`          | Format the repository                 |
+| Command                   | Purpose                               |
+| ------------------------- | ------------------------------------- |
+| `pnpm dev`                | Start the development server          |
+| `pnpm build`              | Create a production build             |
+| `pnpm audit:dependencies` | Audit production dependencies         |
+| `pnpm lint`               | Run ESLint with zero warnings allowed |
+| `pnpm typegen`            | Generate Next.js and message types    |
+| `pnpm typecheck`          | Run strict TypeScript checks          |
+| `pnpm test`               | Run the Vitest suite once             |
+| `pnpm test:coverage`      | Generate test coverage                |
+| `pnpm test:e2e`           | Run Playwright browser tests          |
+| `pnpm test:e2e:ui`        | Open Playwright's interactive runner  |
+| `pnpm storybook`          | Start Storybook on port 6006          |
+| `pnpm build-storybook`    | Build static Storybook output         |
+| `pnpm format`             | Format the repository                 |
 
 ## End-to-end tests
 
