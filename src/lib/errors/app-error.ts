@@ -1,8 +1,12 @@
 export const ErrorCode = {
   CreateFailed: "CREATE_FAILED",
+  Forbidden: "FORBIDDEN",
   InvalidResponse: "INVALID_RESPONSE",
   NotFound: "NOT_FOUND",
+  Network: "NETWORK_ERROR",
+  RequestAborted: "REQUEST_ABORTED",
   RequestFailed: "REQUEST_FAILED",
+  RequestTimeout: "REQUEST_TIMEOUT",
   Unauthorized: "UNAUTHORIZED",
   Unexpected: "UNEXPECTED_ERROR",
   Validation: "VALIDATION_ERROR",

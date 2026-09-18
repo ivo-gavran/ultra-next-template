@@ -7,23 +7,29 @@ import {
   projectsResponseSchema,
   type CreateProjectInput,
 } from "@/features/projects/schemas";
-import { apiRequest } from "@/lib/api/client";
+import { apiClient } from "@/lib/api/client";
 
-export function getProjects() {
-  return apiRequest("/projects", { schema: projectsResponseSchema });
+type RequestContext = {
+  signal?: AbortSignal;
+};
+
+export function getProjects({ signal }: RequestContext = {}) {
+  return apiClient.get("/projects", {
+    schema: projectsResponseSchema,
+    ...(signal ? { signal } : {}),
+  });
 }
 
 export function createProject(input: CreateProjectInput) {
-  return apiRequest("/projects", {
-    method: "POST",
+  return apiClient.post("/projects", {
     body: input,
     schema: projectResponseSchema,
   });
 }
 
 export function deleteProject(id: string) {
-  return apiRequest(`/projects/${id}`, {
-    method: "DELETE",
+  return apiClient.delete("/projects/:id", {
+    pathParams: { id },
     schema: z.object({ data: z.object({ id: z.string().uuid() }) }),
   });
 }

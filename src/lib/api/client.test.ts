@@ -1,73 +1,241 @@
-import { afterEach, describe, expect, it, vi } from "vitest";
+import {
+  afterAll,
+  afterEach,
+  beforeAll,
+  describe,
+  expect,
+  it,
+  vi,
+} from "vitest";
+import { delay, HttpResponse, http } from "msw";
+import { setupServer } from "msw/node";
 import { z } from "zod";
+import { AxiosError, type AxiosAdapter } from "axios";
 
-import { apiRequest } from "@/lib/api/client";
-import { AppError } from "@/lib/errors";
+import { createApiClient } from "@/lib/api/client";
+import { AppError, ErrorCode } from "@/lib/errors";
 
+const baseURL = "https://api.example.test";
+const server = setupServer();
+
+beforeAll(() => server.listen({ onUnhandledRequest: "error" }));
 afterEach(() => {
-  vi.unstubAllGlobals();
+  server.resetHandlers();
+  vi.restoreAllMocks();
 });
+afterAll(() => server.close());
 
-describe("apiRequest", () => {
-  it("returns a response only after schema validation", async () => {
-    const fetchMock = vi.fn().mockResolvedValue(
-      new Response(JSON.stringify({ data: { id: "project-1" } }), {
-        status: 200,
-        headers: { "Content-Type": "application/json" },
+describe("createApiClient", () => {
+  it("builds path and query params, resolves headers and validates responses", async () => {
+    server.use(
+      http.get(`${baseURL}/projects/:id`, ({ params, request }) => {
+        const url = new URL(request.url);
+        expect(params.id).toBe("project one");
+        expect(url.searchParams.get("page")).toBe("2");
+        expect(url.searchParams.getAll("tag[]")).toEqual(["web", "mobile"]);
+        expect(request.headers.get("X-App-Version")).toBe("1");
+        expect(request.headers.get("Authorization")).toBe("Bearer token");
+
+        return HttpResponse.json({ data: { id: params.id } });
       }),
     );
-    vi.stubGlobal("fetch", fetchMock);
 
-    const result = await apiRequest("/projects", {
+    const client = createApiClient({
+      baseURL: `${baseURL}/`,
+      getHeaders: () => ({ "X-App-Version": "1" }),
+      auth: { getAccessToken: () => "token" },
+    });
+
+    const result = await client.get("/projects/:id", {
+      pathParams: { id: "project one" },
+      query: { page: 2, tag: ["web", "mobile"] },
       schema: z.object({ data: z.object({ id: z.string() }) }),
     });
 
-    expect(result.data.id).toBe("project-1");
-    expect(fetchMock).toHaveBeenCalledWith(
-      "https://api.example.test/projects",
-      expect.objectContaining({ headers: { Accept: "application/json" } }),
-    );
+    expect(result).toEqual({ data: { id: "project one" } });
   });
 
   it("throws a structured error for unsuccessful requests", async () => {
-    vi.stubGlobal(
-      "fetch",
-      vi.fn().mockResolvedValue(
-        new Response(
-          JSON.stringify({
-            error: { code: "UNAUTHORIZED", message: "Sign in first." },
-          }),
-          { status: 401, headers: { "Content-Type": "application/json" } },
+    server.use(
+      http.get(`${baseURL}/projects`, () =>
+        HttpResponse.json(
+          {
+            error: {
+              code: "UNAUTHORIZED",
+              message: "Sign in first.",
+              details: { reason: "expired" },
+            },
+          },
+          { status: 401 },
         ),
       ),
     );
 
-    const request = apiRequest("/projects", {
+    const client = createApiClient({ baseURL });
+    const request = client.get("/projects", {
       schema: z.object({ data: z.array(z.unknown()) }),
     });
 
     await expect(request).rejects.toMatchObject<Partial<AppError>>({
       status: 401,
-      code: "UNAUTHORIZED",
+      code: ErrorCode.Unauthorized,
       message: "Sign in first.",
+      details: { reason: "expired" },
     });
   });
 
   it("rejects successful but malformed responses", async () => {
-    vi.stubGlobal(
-      "fetch",
-      vi.fn().mockResolvedValue(
-        new Response(JSON.stringify({ data: { wrong: true } }), {
-          status: 200,
-          headers: { "Content-Type": "application/json" },
-        }),
+    server.use(
+      http.get(`${baseURL}/projects`, () =>
+        HttpResponse.json({ data: { wrong: true } }),
       ),
     );
 
-    const request = apiRequest("/projects", {
+    const client = createApiClient({ baseURL });
+    const request = client.get("/projects", {
       schema: z.object({ data: z.object({ id: z.string() }) }),
     });
 
-    await expect(request).rejects.toMatchObject({ code: "INVALID_RESPONSE" });
+    await expect(request).rejects.toMatchObject({
+      code: ErrorCode.InvalidResponse,
+    });
+  });
+
+  it("supports empty 204 responses", async () => {
+    server.use(
+      http.delete(
+        `${baseURL}/projects/:id`,
+        () => new HttpResponse(null, { status: 204 }),
+      ),
+    );
+
+    const client = createApiClient({ baseURL });
+
+    await expect(
+      client.delete("/projects/:id", { pathParams: { id: "project-1" } }),
+    ).resolves.toBeUndefined();
+  });
+
+  it("maps an aborted request to a stable error code", async () => {
+    server.use(
+      http.get(`${baseURL}/slow`, async () => {
+        await delay("infinite");
+        return HttpResponse.json({ data: true });
+      }),
+    );
+
+    const client = createApiClient({ baseURL });
+    const controller = new AbortController();
+    const request = client.get("/slow", {
+      signal: controller.signal,
+      schema: z.object({ data: z.boolean() }),
+    });
+
+    controller.abort();
+
+    await expect(request).rejects.toMatchObject({
+      code: ErrorCode.RequestAborted,
+    });
+  });
+
+  it("maps request timeouts to a stable error code", async () => {
+    const adapter: AxiosAdapter = async (config) => {
+      expect(config.timeout).toBe(5);
+      throw new AxiosError("timeout", "ECONNABORTED", config);
+    };
+
+    const client = createApiClient({ baseURL, timeout: 5, adapter });
+
+    await expect(
+      client.get("/slow", { schema: z.object({ data: z.boolean() }) }),
+    ).rejects.toMatchObject({ code: ErrorCode.RequestTimeout });
+  });
+
+  it("refreshes one session for concurrent unauthorized requests and retries once", async () => {
+    let accessToken = "expired";
+    let unauthorizedRequests = 0;
+    let releaseRefresh: (() => void) | undefined;
+
+    server.use(
+      http.get(`${baseURL}/protected/:id`, ({ request, params }) => {
+        if (request.headers.get("Authorization") !== "Bearer fresh") {
+          unauthorizedRequests += 1;
+          return HttpResponse.json(
+            { error: { code: "UNAUTHORIZED", message: "Expired session." } },
+            { status: 401 },
+          );
+        }
+
+        return HttpResponse.json({ data: { id: params.id } });
+      }),
+    );
+
+    const refreshSession = vi.fn(
+      () =>
+        new Promise<void>((resolve) => {
+          releaseRefresh = () => {
+            accessToken = "fresh";
+            resolve();
+          };
+        }),
+    );
+    const client = createApiClient({
+      baseURL,
+      auth: {
+        getAccessToken: () => accessToken,
+        refreshSession,
+      },
+    });
+    const schema = z.object({ data: z.object({ id: z.string() }) });
+
+    const requests = Promise.all([
+      client.get("/protected/:id", { pathParams: { id: "one" }, schema }),
+      client.get("/protected/:id", { pathParams: { id: "two" }, schema }),
+    ]);
+
+    await vi.waitFor(() => expect(unauthorizedRequests).toBe(2));
+    expect(refreshSession).toHaveBeenCalledTimes(1);
+    releaseRefresh?.();
+
+    await expect(requests).resolves.toEqual([
+      { data: { id: "one" } },
+      { data: { id: "two" } },
+    ]);
+    expect(refreshSession).toHaveBeenCalledTimes(1);
+  });
+
+  it("notifies auth once when a shared session refresh fails", async () => {
+    let unauthorizedRequests = 0;
+    const refreshError = new Error("Refresh failed");
+
+    server.use(
+      http.get(`${baseURL}/protected`, () => {
+        unauthorizedRequests += 1;
+        return HttpResponse.json(
+          { error: { code: "UNAUTHORIZED", message: "Expired session." } },
+          { status: 401 },
+        );
+      }),
+    );
+
+    const onUnauthorized = vi.fn();
+    const refreshSession = vi.fn(async () => {
+      await vi.waitFor(() => expect(unauthorizedRequests).toBe(2));
+      throw refreshError;
+    });
+    const client = createApiClient({
+      baseURL,
+      auth: { refreshSession, onUnauthorized },
+    });
+    const schema = z.object({ data: z.boolean() });
+
+    const results = await Promise.allSettled([
+      client.get("/protected", { schema }),
+      client.get("/protected", { schema }),
+    ]);
+
+    expect(results.every(({ status }) => status === "rejected")).toBe(true);
+    expect(refreshSession).toHaveBeenCalledTimes(1);
+    expect(onUnauthorized).toHaveBeenCalledTimes(1);
   });
 });

@@ -13,7 +13,7 @@
     "secondaryCta": "Explore the stack",
     "stackTitle": "Everything has a clear boundary",
     "apiTitle": "Typed API boundary",
-    "apiDescription": "A small fetch client with runtime Zod validation and a replaceable external API URL.",
+    "apiDescription": "An auth-ready Axios client with runtime Zod validation and a replaceable external API URL.",
     "clientTitle": "Client experience",
     "clientDescription": "TanStack Query, accessible UI primitives, dark mode and typed forms.",
     "qualityTitle": "Quality built in",
@@ -21,9 +21,13 @@
   },
   "Errors": {
     "createFailed": "The project could not be created. Please try again.",
+    "forbidden": "You do not have permission to perform this action.",
     "invalidResponse": "The server returned an unexpected response.",
+    "network": "The API could not be reached. Check your connection.",
     "notFound": "The requested item could not be found.",
+    "requestAborted": "The request was canceled.",
     "requestFailed": "The request failed. Please try again.",
+    "requestTimeout": "The request took too long. Please try again.",
     "unauthorized": "You are not authorized to perform this action.",
     "unexpected": "Something went wrong. Please try again.",
     "validation": "Check the submitted fields."

@@ -22,7 +22,7 @@ export const projectQueries = {
   keys: projectKeys,
   list: () =>
     projectQueryFactory.list(allProjectFilters, {
-      queryFn: async () => (await getProjects()).data,
+      queryFn: async ({ signal }) => (await getProjects({ signal })).data,
       meta: { suppressErrorToast: true },
     }),
 };
