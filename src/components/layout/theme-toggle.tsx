@@ -6,7 +6,7 @@ import { useSyncExternalStore } from "react";
 
 import { Button } from "@/components/ui/button";
 
-export function ThemeToggle() {
+export function ThemeToggle({ label }: { label: string }) {
   const { resolvedTheme, setTheme } = useTheme();
   const mounted = useSyncExternalStore(
     () => () => undefined,
@@ -19,7 +19,7 @@ export function ThemeToggle() {
       type="button"
       variant="ghost"
       size="icon"
-      aria-label="Toggle color theme"
+      aria-label={label}
       disabled={!mounted}
       onClick={() => setTheme(resolvedTheme === "dark" ? "light" : "dark")}
     >

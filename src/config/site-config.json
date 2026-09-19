@@ -1,0 +1,15 @@
+{
+  "name": "Ultra Next",
+  "shortName": "Ultra Next",
+  "defaultLocale": "en",
+  "localized": {
+    "en": {
+      "description": "A production-minded Next.js frontend starter with typed API boundaries, query state, i18n and a complete quality toolchain.",
+      "openGraphLocale": "en_US"
+    },
+    "bs": {
+      "description": "Next.js frontend starter spreman za produkciju, sa tipizovanim API granicama, query stateom, internacionalizacijom i kompletnim quality toolchainom.",
+      "openGraphLocale": "bs_BA"
+    }
+  }
+}

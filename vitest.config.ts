@@ -7,7 +7,7 @@ export default defineConfig({
   test: {
     environment: "jsdom",
     env: {
-      NEXT_PUBLIC_APP_URL: "https://ultra.example.test",
+      NEXT_PUBLIC_APP_URL: "https://app.example.test",
       NEXT_PUBLIC_API_URL: "https://api.example.test",
       NEXT_PUBLIC_API_MOCKING: "disabled",
     },
@@ -16,7 +16,25 @@ export default defineConfig({
     coverage: {
       provider: "v8",
       reporter: ["text", "html"],
-      include: ["src/components/ui/**/*.tsx", "src/lib/api/client.ts"],
+      reportOnFailure: true,
+      include: [
+        "src/components/ui/{async-state,button,pagination,toast}.tsx",
+        "src/config/{security-headers,site}.ts",
+        "src/features/projects/{filters,queries}.ts",
+        "src/lib/api/client.ts",
+        "src/lib/auth/adapter.ts",
+        "src/lib/errors/{app-error,messages,reporting}.ts",
+        "src/lib/metadata.ts",
+        "src/lib/performance/reporting.ts",
+        "src/lib/query/**/*.ts",
+        "src/lib/validation/error-map.ts",
+      ],
+      thresholds: {
+        branches: 75,
+        functions: 70,
+        lines: 80,
+        statements: 80,
+      },
     },
   },
 });

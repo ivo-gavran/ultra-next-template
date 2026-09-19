@@ -1,0 +1,9 @@
+{
+  "typescript": true,
+  "icon": true,
+  "jsxRuntime": "automatic",
+  "expandProps": "end",
+  "titleProp": true,
+  "svgo": true,
+  "prettier": false
+}

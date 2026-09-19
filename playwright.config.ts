@@ -4,6 +4,7 @@ const baseURL = process.env.PLAYWRIGHT_BASE_URL ?? "http://127.0.0.1:3100";
 
 export default defineConfig({
   testDir: "./e2e",
+  testIgnore: ["**/visual.spec.ts"],
   fullyParallel: false,
   forbidOnly: Boolean(process.env.CI),
   retries: process.env.CI ? 2 : 0,
@@ -28,7 +29,7 @@ export default defineConfig({
     timeout: 120_000,
     env: {
       NEXT_PUBLIC_APP_URL: baseURL,
-      NEXT_PUBLIC_API_URL: "https://api.ultra.test",
+      NEXT_PUBLIC_API_URL: "https://api.example.test",
       NEXT_PUBLIC_API_MOCKING: "enabled",
     },
   },

@@ -1,5 +1,7 @@
 import { expect, test } from "@playwright/test";
 
+import siteIdentity from "../src/config/site-config.json" with { type: "json" };
+
 test("renders localized canonical and social metadata", async ({
   baseURL,
   page,
@@ -8,7 +10,7 @@ test("renders localized canonical and social metadata", async ({
 
   await page.goto("/bs");
 
-  await expect(page).toHaveTitle("Ultra Next");
+  await expect(page).toHaveTitle(siteIdentity.name);
   await expect(page.locator('link[rel="canonical"]')).toHaveAttribute(
     "href",
     `${origin}/bs`,
@@ -24,7 +26,7 @@ test("renders localized canonical and social metadata", async ({
 
   await page.goto("/en/projects");
 
-  await expect(page).toHaveTitle("Projects · Ultra Next");
+  await expect(page).toHaveTitle(`Projects · ${siteIdentity.name}`);
   await expect(page.locator('meta[name="twitter:title"]')).toHaveAttribute(
     "content",
     "Projects",
@@ -51,8 +53,8 @@ test("serves crawler and application metadata routes", async ({
   const manifestResponse = await request.get("/manifest.webmanifest");
   expect(manifestResponse.ok()).toBe(true);
   await expect(manifestResponse.json()).resolves.toMatchObject({
-    name: "Ultra Next",
-    start_url: "/en",
+    name: siteIdentity.name,
+    start_url: `/${siteIdentity.defaultLocale}`,
     display: "standalone",
   });
 });

@@ -1,13 +1,20 @@
 import { expect, test } from "@playwright/test";
 
+import siteIdentity from "../src/config/site-config.json" with { type: "json" };
+
+const defaultHomeTitle =
+  siteIdentity.defaultLocale === "bs"
+    ? "Gradi proizvod, ne infrastrukturu."
+    : "Ship the product, not the plumbing.";
+
 test("redirects the root route to the default locale", async ({ page }) => {
   await page.goto("/");
 
-  await expect(page).toHaveURL(/\/en$/);
+  await expect(page).toHaveURL(new RegExp(`/${siteIdentity.defaultLocale}$`));
   await expect(
     page.getByRole("heading", {
       level: 1,
-      name: "Ship the product, not the plumbing.",
+      name: defaultHomeTitle,
     }),
   ).toBeVisible();
 });
