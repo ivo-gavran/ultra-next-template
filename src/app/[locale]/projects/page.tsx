@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { getTranslations, setRequestLocale } from "next-intl/server";
+import { Suspense } from "react";
 
 import { ProjectManager } from "@/components/projects/project-manager";
 import { getRouteLocale } from "@/i18n/params";
@@ -41,7 +42,11 @@ export default async function ProjectsPage({
       <p className="text-muted-foreground mt-4 mb-10 max-w-2xl text-lg leading-8">
         {t("description")}
       </p>
-      <ProjectManager />
+      <Suspense
+        fallback={<p className="text-muted-foreground">{t("loading")}</p>}
+      >
+        <ProjectManager />
+      </Suspense>
     </section>
   );
 }

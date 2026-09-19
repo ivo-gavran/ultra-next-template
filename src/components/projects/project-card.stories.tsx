@@ -18,6 +18,7 @@ const meta = {
   args: {
     project,
     locale: "en",
+    editLabel: "Edit Launch the customer portal",
     deleteLabel: "Delete Launch the customer portal",
     onDelete: fn(),
   },

@@ -13,11 +13,37 @@ export const createProjectSchema = z.object({
   description: z.string().trim().max(240).optional(),
 });
 
-export const projectsResponseSchema = z.object({
-  data: z.array(projectSchema),
+export const updateProjectSchema = createProjectSchema;
+
+export const projectSortSchema = z.enum([
+  "createdAt-desc",
+  "createdAt-asc",
+  "name-asc",
+  "name-desc",
+]);
+
+export const projectListFiltersSchema = z.object({
+  search: z.string().trim().max(80).default(""),
+  sort: projectSortSchema.default("createdAt-desc"),
+  page: z.coerce.number().int().positive().default(1),
+  pageSize: z.coerce.number().int().min(1).max(50).default(3),
 });
+
+export const projectsPageSchema = z.object({
+  items: z.array(projectSchema),
+  page: z.number().int().positive(),
+  pageSize: z.number().int().positive(),
+  total: z.number().int().nonnegative(),
+  totalPages: z.number().int().positive(),
+});
+
+export const projectsResponseSchema = z.object({ data: projectsPageSchema });
 
 export const projectResponseSchema = z.object({ data: projectSchema });
 
 export type Project = z.infer<typeof projectSchema>;
 export type CreateProjectInput = z.infer<typeof createProjectSchema>;
+export type UpdateProjectInput = z.infer<typeof updateProjectSchema>;
+export type ProjectSort = z.infer<typeof projectSortSchema>;
+export type ProjectListFilters = z.infer<typeof projectListFiltersSchema>;
+export type ProjectsPage = z.infer<typeof projectsPageSchema>;

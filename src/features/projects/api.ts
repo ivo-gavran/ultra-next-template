@@ -6,6 +6,8 @@ import {
   projectResponseSchema,
   projectsResponseSchema,
   type CreateProjectInput,
+  type ProjectListFilters,
+  type UpdateProjectInput,
 } from "@/features/projects/schemas";
 import { apiClient } from "@/lib/api/client";
 
@@ -13,8 +15,12 @@ type RequestContext = {
   signal?: AbortSignal;
 };
 
-export function getProjects({ signal }: RequestContext = {}) {
+export function getProjects(
+  filters: ProjectListFilters,
+  { signal }: RequestContext = {},
+) {
   return apiClient.get("/projects", {
+    query: filters,
     schema: projectsResponseSchema,
     ...(signal ? { signal } : {}),
   });
@@ -22,6 +28,17 @@ export function getProjects({ signal }: RequestContext = {}) {
 
 export function createProject(input: CreateProjectInput) {
   return apiClient.post("/projects", {
+    body: input,
+    schema: projectResponseSchema,
+  });
+}
+
+export function updateProject({
+  id,
+  ...input
+}: UpdateProjectInput & { id: string }) {
+  return apiClient.patch("/projects/:id", {
+    pathParams: { id },
     body: input,
     schema: projectResponseSchema,
   });
