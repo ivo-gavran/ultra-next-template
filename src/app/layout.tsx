@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { getLocale } from "next-intl/server";
 
+import { WebVitals } from "@/components/providers/web-vitals";
+
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -19,6 +21,7 @@ export default async function RootLayout({
   return (
     <html lang={locale} data-scroll-behavior="smooth" suppressHydrationWarning>
       <body className="bg-background text-foreground min-h-screen font-sans antialiased">
+        <WebVitals />
         {children}
       </body>
     </html>
