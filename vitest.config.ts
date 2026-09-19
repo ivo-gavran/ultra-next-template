@@ -7,6 +7,7 @@ export default defineConfig({
   test: {
     environment: "jsdom",
     env: {
+      NEXT_PUBLIC_APP_URL: "https://ultra.example.test",
       NEXT_PUBLIC_API_URL: "https://api.example.test",
       NEXT_PUBLIC_API_MOCKING: "disabled",
     },

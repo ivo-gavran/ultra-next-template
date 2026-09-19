@@ -1,10 +1,29 @@
 import { ArrowRight, Braces, Layers3, ShieldCheck } from "lucide-react";
+import type { Metadata } from "next";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { siteConfig } from "@/config/site";
 import { Link } from "@/i18n/navigation";
 import { getRouteLocale } from "@/i18n/params";
+import { createPageMetadata } from "@/lib/metadata";
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const locale = await getRouteLocale(params);
+
+  return createPageMetadata({
+    absoluteTitle: true,
+    description: siteConfig.localized[locale].description,
+    locale,
+    path: "/",
+    title: siteConfig.name,
+  });
+}
 
 export default async function HomePage({
   params,

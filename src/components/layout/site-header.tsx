@@ -4,6 +4,7 @@ import { getTranslations } from "next-intl/server";
 import { LocaleSwitcher } from "@/components/layout/locale-switcher";
 import { ThemeToggle } from "@/components/layout/theme-toggle";
 import { Button } from "@/components/ui/button";
+import { siteConfig } from "@/config/site";
 import { Link } from "@/i18n/navigation";
 
 export async function SiteHeader() {
@@ -19,7 +20,7 @@ export async function SiteHeader() {
           <span className="bg-primary text-primary-foreground grid size-8 place-items-center rounded-xl">
             <Atom className="size-4" />
           </span>
-          {t("brand")}
+          {siteConfig.name}
         </Link>
 
         <nav className="flex items-center gap-1" aria-label="Main navigation">
