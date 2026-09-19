@@ -16,7 +16,7 @@ The goal is simple: clone it and start on product UI. Routing, query state, vali
 | Forms                | React Hook Form and shared Zod schemas                                      |
 | UI                   | shadcn/ui (Radix), Tailwind CSS v4, semantic design tokens and dark mode    |
 | Internationalization | `next-intl`, locale-prefixed routing, English and Bosnian                   |
-| Quality              | ESLint, Prettier, Vitest, Playwright, Storybook and accessibility checks    |
+| Quality              | Coverage gates, Playwright visual tests, Storybook and accessibility checks |
 | Performance          | Core Web Vitals reporting, bundle analysis and Lighthouse CI budgets        |
 | Security             | CSP, secure response headers and automated dependency auditing              |
 | Workflow             | pnpm, Lefthook, Commitlint, Dependabot and GitHub Actions                   |
@@ -29,11 +29,41 @@ Requirements: Node.js 24+ and pnpm 11+.
 
 ```bash
 pnpm install
-cp .env.example .env.local
+pnpm run setup
 pnpm dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000). The development mock is enabled by default, so the Projects demo works without any additional service.
+
+`pnpm run setup` asks for the product identity, package name, public origins and default locale, then creates `.env.local`. To keep the template defaults instead, run `pnpm run setup -- --yes`.
+
+## Personalizing the template
+
+Run the idempotent setup command whenever you want to update the starter identity:
+
+```bash
+pnpm run setup
+```
+
+It updates the package name and description, the shared site identity in `src/config/site-config.json`, the first README heading, `.env.example` and the ignored `.env.local`. It validates package names, locales and public origins before writing anything.
+
+Automation can supply every value without prompts, and `--dry-run` previews the affected files:
+
+```bash
+pnpm run setup -- \
+  --name "Acme Portal" \
+  --short-name "Acme" \
+  --package-name "acme-portal" \
+  --app-url "https://app.acme.com" \
+  --api-url "https://api.acme.com" \
+  --default-locale "en" \
+  --description-en "Acme customer portal." \
+  --description-bs "Acme korisnički portal." \
+  --yes \
+  --dry-run
+```
+
+Use `pnpm run setup -- --help` for the complete flag list.
 
 ## Project structure
 
@@ -41,16 +71,20 @@ Open [http://localhost:3000](http://localhost:3000). The development mock is ena
 src/
 ├── app/                    # Localized App Router pages and route fallbacks
 ├── components/
+│   ├── icons/              # Generated, typed custom SVG components
 │   ├── layout/             # Header, locale and theme controls
 │   ├── projects/           # Example feature UI
 │   ├── providers/          # Query, theme, toast and mock providers
 │   └── ui/                 # Reusable design-system primitives
-├── config/                 # Validated public environment
+├── config/                 # Site identity and validated public environment
 ├── features/               # API functions, schemas and query hooks
 ├── i18n/                   # Routing, navigation and request config
-├── lib/                    # API, errors, queries, validation and utilities
+├── lib/                    # API, auth adapters, errors, queries and utilities
 ├── mocks/                  # Development API contract handlers
 └── test/                   # Shared unit-test setup
+assets/icons/               # Source SVG artwork
+docs/                       # Integration guides
+scripts/                    # Setup and generated-artifact checks
 ```
 
 Application composition stays thin, features own their schemas and data operations, reusable UI stays independent, and backend-specific decisions stay outside the template.
@@ -59,7 +93,7 @@ UI primitives are source-owned shadcn/ui components configured through `componen
 
 ## Application identity and metadata
 
-`src/config/site.ts` is the single source of truth for the application name, short name, localized descriptions, supported locales and public routes. Set the canonical deployment origin separately for each environment:
+`src/config/site-config.json` is the editable source of truth for the application name, short name, localized descriptions and default locale. `src/config/site.ts` combines it with validated environment values, supported locales and public routes. Set the canonical deployment origin separately for each environment:
 
 ```bash
 NEXT_PUBLIC_APP_URL=https://app.example.com
@@ -133,6 +167,8 @@ const authenticatedApi = createApiClient({
 ```
 
 Only one `refreshSession` call runs when concurrent requests receive `401`; waiting requests retry once with the latest token. Use `skipAuth` for public endpoints and `skipAuthRefresh` for auth endpoints that must never enter the refresh flow. The hooks intentionally do not prescribe an authentication provider or token storage mechanism.
+
+`createApiAuthHooks` adapts bearer-token and cookie-based sessions to this client contract. See the [authentication integration guide](docs/authentication.md) for provider examples, server-side route protection and security constraints.
 
 Adapt the error-envelope parsing in `src/lib/api/client.ts` if your backend uses a different contract.
 
@@ -225,6 +261,30 @@ The application shell provides a localized skip link that moves keyboard focus d
 
 Playwright runs axe against the home, Projects and not-found routes across both locales and light and dark themes. Serious and critical WCAG A/AA violations fail the E2E job. Automated checks do not replace manual keyboard and screen-reader testing; they keep common regressions from reaching review unnoticed.
 
+User-facing accessibility labels in the shared shell are translated with the rest of the interface. Decorative spinners stay out of the accessibility tree by default; loading containers own the announced status text.
+
+## Custom SVG icons
+
+Keep raw artwork in `assets/icons`, then generate typed React components:
+
+```bash
+pnpm icons:generate
+```
+
+Import generated icons from `@/components/icons/generated`. Do not edit that directory by hand: CI runs `pnpm icons:check` and fails when committed components differ from their source SVGs. The build-time generator avoids custom webpack or Turbopack loaders, so the same icons work in Next.js, Storybook and tests.
+
+## Visual regression tests
+
+The regular E2E suite excludes visual snapshots so functional browser tests stay portable. A separate suite builds the production application and captures the home shell in light, dark and mobile modes plus the Projects workflow shell.
+
+Create or intentionally refresh the Linux baselines with the pinned official Playwright container:
+
+```bash
+pnpm test:visual:update:docker
+```
+
+Review and commit the PNG changes under `e2e/visual.spec.ts-snapshots`. Run `pnpm test:visual:docker` to compare them locally in the canonical environment. CI runs `pnpm test:visual` in the same container image and uploads the visual diff only on failure. Keep the Docker image version in `scripts/run-visual-tests-docker.mjs` and `.github/workflows/ci.yml` aligned with `@playwright/test` when upgrading Playwright.
+
 ## Performance
 
 The isolated `WebVitals` client component forwards Next.js Core Web Vitals through a provider-neutral adapter. The default development adapter logs reports to the browser console; production is a no-op until the application configures its analytics provider in `src/instrumentation-client.ts`:
@@ -247,25 +307,31 @@ Reports contain only the metric values and timestamp. Performance entries and co
 
 ## Commands
 
-| Command                   | Purpose                                |
-| ------------------------- | -------------------------------------- |
-| `pnpm dev`                | Start the development server           |
-| `pnpm build`              | Create a production build              |
-| `pnpm analyze`            | Open the Next.js bundle analyzer       |
-| `pnpm analyze:output`     | Write a static bundle analysis         |
-| `pnpm audit:dependencies` | Audit production dependencies          |
-| `pnpm lint`               | Run ESLint with zero warnings allowed  |
-| `pnpm typegen`            | Generate Next.js and message types     |
-| `pnpm typecheck`          | Run strict TypeScript checks           |
-| `pnpm test`               | Run the Vitest suite once              |
-| `pnpm test:coverage`      | Generate test coverage                 |
-| `pnpm test:e2e`           | Run Playwright browser tests           |
-| `pnpm test:e2e:a11y`      | Run browser accessibility checks       |
-| `pnpm test:e2e:ui`        | Open Playwright's interactive runner   |
-| `pnpm performance:check`  | Enforce Lighthouse performance budgets |
-| `pnpm storybook`          | Start Storybook on port 6006           |
-| `pnpm build-storybook`    | Build static Storybook output          |
-| `pnpm format`             | Format the repository                  |
+| Command                          | Purpose                                      |
+| -------------------------------- | -------------------------------------------- |
+| `pnpm run setup`                 | Personalize identity, origins and locale     |
+| `pnpm dev`                       | Start the development server                 |
+| `pnpm build`                     | Create a production build                    |
+| `pnpm analyze`                   | Open the Next.js bundle analyzer             |
+| `pnpm analyze:output`            | Write a static bundle analysis               |
+| `pnpm audit:dependencies`        | Audit production dependencies                |
+| `pnpm icons:generate`            | Generate React components from source SVGs   |
+| `pnpm icons:check`               | Verify generated icons are current           |
+| `pnpm lint`                      | Run ESLint with zero warnings allowed        |
+| `pnpm typegen`                   | Generate Next.js and message types           |
+| `pnpm typecheck`                 | Run strict TypeScript checks                 |
+| `pnpm test`                      | Run the Vitest suite once                    |
+| `pnpm test:coverage`             | Enforce critical-module coverage thresholds  |
+| `pnpm test:e2e`                  | Run functional Playwright browser tests      |
+| `pnpm test:e2e:a11y`             | Run browser accessibility checks             |
+| `pnpm test:e2e:ui`               | Open Playwright's interactive runner         |
+| `pnpm test:visual`               | Compare visual snapshots on Linux            |
+| `pnpm test:visual:docker`        | Compare canonical visual snapshots in Docker |
+| `pnpm test:visual:update:docker` | Refresh canonical visual baselines in Docker |
+| `pnpm performance:check`         | Enforce Lighthouse performance budgets       |
+| `pnpm storybook`                 | Start Storybook on port 6006                 |
+| `pnpm build-storybook`           | Build static Storybook output                |
+| `pnpm format`                    | Format the repository                        |
 
 ## End-to-end tests
 
@@ -289,9 +355,9 @@ Playwright starts Next.js on port `3100` with the external API contract mocked i
 
 ## CI and deployment
 
-GitHub Actions verifies formatting, linting, types, unit tests, Storybook, the production build and browser-level E2E tests. Lefthook runs fast static checks before a commit, while Commitlint enforces Conventional Commits.
+GitHub Actions verifies generated icons, formatting, linting, types, critical-module coverage, Storybook, the production build, functional E2E tests, visual snapshots and performance budgets. Lefthook runs fast static checks before a commit, while Commitlint enforces Conventional Commits.
 
-Set `NEXT_PUBLIC_API_URL` and `NEXT_PUBLIC_API_MOCKING=disabled` in the production build environment, then deploy to any Node.js-compatible Next.js host. Configure CORS and the chosen authentication mechanism on the external backend for the deployed frontend origin.
+Set `NEXT_PUBLIC_APP_URL`, `NEXT_PUBLIC_API_URL` and `NEXT_PUBLIC_API_MOCKING=disabled` in the production build environment, then deploy to any Node.js-compatible Next.js host. Configure CORS and the chosen authentication mechanism on the external backend for the deployed frontend origin.
 
 ## License
 

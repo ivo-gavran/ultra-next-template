@@ -13,7 +13,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     env:
-      NEXT_PUBLIC_APP_URL: https://ultra.example.test
+      NEXT_PUBLIC_APP_URL: https://app.example.test
       NEXT_PUBLIC_API_URL: https://api.example.test
       NEXT_PUBLIC_API_MOCKING: disabled
     steps:
@@ -25,10 +25,11 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm audit:dependencies
+      - run: pnpm icons:check
       - run: pnpm format:check
       - run: pnpm lint
       - run: pnpm typecheck
-      - run: pnpm test
+      - run: pnpm test:coverage
       - run: pnpm build-storybook
       - run: pnpm build
 
@@ -56,11 +57,37 @@ jobs:
           if-no-files-found: ignore
           retention-days: 7
 
+  visual:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    container:
+      image: mcr.microsoft.com/playwright:v1.63.0-noble
+    steps:
+      - uses: actions/checkout@v4
+      - run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm test:visual
+      - name: Upload visual diff
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: visual-regression-report
+          path: |
+            playwright-report/
+            test-results/
+          if-no-files-found: ignore
+          retention-days: 7
+
   performance:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     env:
-      NEXT_PUBLIC_APP_URL: https://ultra.example.test
+      NEXT_PUBLIC_APP_URL: https://app.example.test
       NEXT_PUBLIC_API_URL: https://api.example.test
       NEXT_PUBLIC_API_MOCKING: disabled
       NEXT_TELEMETRY_DISABLED: 1

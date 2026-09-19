@@ -1,5 +1,7 @@
 import { describe, expect, it } from "vitest";
 
+import { siteConfig } from "@/config/site";
+
 import manifest from "./manifest";
 import robots from "./robots";
 import sitemap from "./sitemap";
@@ -8,12 +10,12 @@ describe("metadata routes", () => {
   it("publishes an application manifest from the shared site identity", () => {
     expect(manifest()).toMatchObject({
       id: "/",
-      name: "Ultra Next",
-      short_name: "Ultra Next",
-      start_url: "/en",
+      name: siteConfig.name,
+      short_name: siteConfig.shortName,
+      start_url: `/${siteConfig.defaultLocale}`,
       scope: "/",
       display: "standalone",
-      lang: "en",
+      lang: siteConfig.defaultLocale,
       icons: [{ src: "/icon.svg", sizes: "any", type: "image/svg+xml" }],
     });
   });
@@ -21,8 +23,8 @@ describe("metadata routes", () => {
   it("points crawlers to the canonical sitemap", () => {
     expect(robots()).toEqual({
       rules: { userAgent: "*", allow: "/" },
-      sitemap: "https://ultra.example.test/sitemap.xml",
-      host: "https://ultra.example.test",
+      sitemap: `${siteConfig.url}/sitemap.xml`,
+      host: siteConfig.url,
     });
   });
 
@@ -31,18 +33,18 @@ describe("metadata routes", () => {
 
     expect(entries).toHaveLength(4);
     expect(entries.map((entry) => entry.url)).toEqual([
-      "https://ultra.example.test/en",
-      "https://ultra.example.test/bs",
-      "https://ultra.example.test/en/projects",
-      "https://ultra.example.test/bs/projects",
+      `${siteConfig.url}/en`,
+      `${siteConfig.url}/bs`,
+      `${siteConfig.url}/en/projects`,
+      `${siteConfig.url}/bs/projects`,
     ]);
     expect(entries.every((entry) => entry.lastModified === undefined)).toBe(
       true,
     );
     expect(entries[2]?.alternates?.languages).toEqual({
-      en: "https://ultra.example.test/en/projects",
-      bs: "https://ultra.example.test/bs/projects",
-      "x-default": "https://ultra.example.test/en/projects",
+      en: `${siteConfig.url}/en/projects`,
+      bs: `${siteConfig.url}/bs/projects`,
+      "x-default": `${siteConfig.url}/${siteConfig.defaultLocale}/projects`,
     });
   });
 });

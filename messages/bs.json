@@ -1,9 +1,11 @@
 {
   "Nav": {
     "home": "Početna",
+    "mainNavigation": "Glavna navigacija",
     "projects": "Projekti",
     "skipToContent": "Preskoči na glavni sadržaj",
-    "switchLanguage": "EN"
+    "switchLanguage": "EN",
+    "toggleTheme": "Promijeni temu boja"
   },
   "Home": {
     "eyebrow": "Next.js starter spreman za ozbiljan rad",

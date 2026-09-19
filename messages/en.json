@@ -1,9 +1,11 @@
 {
   "Nav": {
     "home": "Home",
+    "mainNavigation": "Main navigation",
     "projects": "Projects",
     "skipToContent": "Skip to main content",
-    "switchLanguage": "BS"
+    "switchLanguage": "BS",
+    "toggleTheme": "Toggle color theme"
   },
   "Home": {
     "eyebrow": "A production-minded Next.js starter",

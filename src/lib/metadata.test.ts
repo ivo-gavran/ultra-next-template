@@ -1,5 +1,7 @@
 import { describe, expect, it } from "vitest";
 
+import { siteConfig } from "@/config/site";
+
 import { createPageMetadata } from "./metadata";
 
 describe("createPageMetadata", () => {
@@ -15,19 +17,19 @@ describe("createPageMetadata", () => {
       title: "Projekti",
       description: "Opis projekta",
       alternates: {
-        canonical: "https://ultra.example.test/bs/projects",
+        canonical: `${siteConfig.url}/bs/projects`,
         languages: {
-          en: "https://ultra.example.test/en/projects",
-          bs: "https://ultra.example.test/bs/projects",
-          "x-default": "https://ultra.example.test/en/projects",
+          en: `${siteConfig.url}/en/projects`,
+          bs: `${siteConfig.url}/bs/projects`,
+          "x-default": `${siteConfig.url}/${siteConfig.defaultLocale}/projects`,
         },
       },
       openGraph: {
         type: "website",
         title: "Projekti",
         description: "Opis projekta",
-        url: "https://ultra.example.test/bs/projects",
-        siteName: "Ultra Next",
+        url: `${siteConfig.url}/bs/projects`,
+        siteName: siteConfig.name,
         locale: "bs_BA",
         alternateLocale: ["en_US"],
       },
@@ -45,9 +47,9 @@ describe("createPageMetadata", () => {
       description: "Description",
       locale: "en",
       path: "/",
-      title: "Ultra Next",
+      title: siteConfig.name,
     });
 
-    expect(metadata.title).toEqual({ absolute: "Ultra Next" });
+    expect(metadata.title).toEqual({ absolute: siteConfig.name });
   });
 });

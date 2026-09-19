@@ -1,4 +1,5 @@
 import { publicEnv } from "@/config/public-env";
+import siteIdentity from "@/config/site-config.json";
 import { routing, type AppLocale } from "@/i18n/routing";
 
 type LocalizedSiteConfig = {
@@ -6,22 +7,14 @@ type LocalizedSiteConfig = {
   openGraphLocale: string;
 };
 
-const localized = {
-  en: {
-    description:
-      "A production-minded Next.js frontend starter with typed API boundaries, query state, i18n and a complete quality toolchain.",
-    openGraphLocale: "en_US",
-  },
-  bs: {
-    description:
-      "Next.js frontend starter spreman za produkciju, sa tipizovanim API granicama, query stateom, internacionalizacijom i kompletnim quality toolchainom.",
-    openGraphLocale: "bs_BA",
-  },
-} satisfies Record<AppLocale, LocalizedSiteConfig>;
+const localized = siteIdentity.localized satisfies Record<
+  AppLocale,
+  LocalizedSiteConfig
+>;
 
 export const siteConfig = {
-  name: "Ultra Next",
-  shortName: "Ultra Next",
+  name: siteIdentity.name,
+  shortName: siteIdentity.shortName,
   url: publicEnv.NEXT_PUBLIC_APP_URL,
   defaultLocale: routing.defaultLocale,
   locales: routing.locales,

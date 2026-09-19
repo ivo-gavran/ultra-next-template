@@ -23,7 +23,10 @@ export async function SiteHeader() {
           {siteConfig.name}
         </Link>
 
-        <nav className="flex items-center gap-1" aria-label="Main navigation">
+        <nav
+          className="flex items-center gap-1"
+          aria-label={t("mainNavigation")}
+        >
           <Button
             asChild
             variant="ghost"
@@ -36,7 +39,7 @@ export async function SiteHeader() {
             <Link href="/projects">{t("projects")}</Link>
           </Button>
           <LocaleSwitcher />
-          <ThemeToggle />
+          <ThemeToggle label={t("toggleTheme")} />
         </nav>
       </div>
     </header>
