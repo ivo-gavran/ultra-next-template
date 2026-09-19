@@ -1,6 +1,11 @@
 import { HttpResponse, http } from "msw";
 
-import { createProjectSchema, type Project } from "@/features/projects/schemas";
+import {
+  createProjectSchema,
+  projectListFiltersSchema,
+  updateProjectSchema,
+  type Project,
+} from "@/features/projects/schemas";
 import { getApiUrl } from "@/lib/api/client";
 
 const initialProjects: Project[] = [
@@ -8,16 +13,80 @@ const initialProjects: Project[] = [
     id: "5e8f9e0d-1cd7-41e3-86f4-7c1305c6be76",
     name: "Connect the real API",
     description: "Replace the development mock URL when your backend is ready.",
-    createdAt: "2026-01-15T09:00:00.000Z",
-    updatedAt: "2026-01-15T09:00:00.000Z",
+    createdAt: "2026-09-15T09:00:00.000Z",
+    updatedAt: "2026-09-15T09:00:00.000Z",
+  },
+  {
+    id: "ef2062a6-844c-4129-a383-b10fc52e9dc8",
+    name: "Invite the first team",
+    description: "Exercise the shared mutation and notification patterns.",
+    createdAt: "2026-08-19T11:30:00.000Z",
+    updatedAt: "2026-08-19T11:30:00.000Z",
+  },
+  {
+    id: "c7520412-474d-4f82-a352-6f938364f9ef",
+    name: "Review accessibility",
+    description: "Run the browser-level accessibility quality gate.",
+    createdAt: "2026-07-04T14:15:00.000Z",
+    updatedAt: "2026-07-04T14:15:00.000Z",
+  },
+  {
+    id: "6687c693-5aba-497f-9f1e-9bd998184459",
+    name: "Configure observability",
+    description: "Connect the provider-neutral reporting boundary.",
+    createdAt: "2026-06-21T08:45:00.000Z",
+    updatedAt: "2026-06-21T08:45:00.000Z",
   },
 ];
 
 let projects = initialProjects.map((project) => ({ ...project }));
 
 export const handlers = [
-  http.get(getApiUrl("/projects"), () => {
-    return HttpResponse.json({ data: projects });
+  http.get(getApiUrl("/projects"), ({ request }) => {
+    const url = new URL(request.url);
+    const parsedFilters = projectListFiltersSchema.safeParse({
+      search: url.searchParams.get("search") ?? undefined,
+      sort: url.searchParams.get("sort") ?? undefined,
+      page: url.searchParams.get("page") ?? undefined,
+      pageSize: url.searchParams.get("pageSize") ?? undefined,
+    });
+
+    if (!parsedFilters.success) {
+      return HttpResponse.json(
+        { error: { code: "VALIDATION_ERROR", message: "Invalid filters." } },
+        { status: 400 },
+      );
+    }
+
+    const { search, sort, page, pageSize } = parsedFilters.data;
+    const normalizedSearch = search.toLocaleLowerCase();
+    const filteredProjects = projects.filter((project) =>
+      `${project.name} ${project.description ?? ""}`
+        .toLocaleLowerCase()
+        .includes(normalizedSearch),
+    );
+    const sortedProjects = [...filteredProjects].sort((left, right) => {
+      if (sort === "name-asc") return left.name.localeCompare(right.name);
+      if (sort === "name-desc") return right.name.localeCompare(left.name);
+      if (sort === "createdAt-asc") {
+        return left.createdAt.localeCompare(right.createdAt);
+      }
+      return right.createdAt.localeCompare(left.createdAt);
+    });
+    const total = sortedProjects.length;
+    const totalPages = Math.max(1, Math.ceil(total / pageSize));
+    const resolvedPage = Math.min(page, totalPages);
+    const start = (resolvedPage - 1) * pageSize;
+
+    return HttpResponse.json({
+      data: {
+        items: sortedProjects.slice(start, start + pageSize),
+        page: resolvedPage,
+        pageSize,
+        total,
+        totalPages,
+      },
+    });
   }),
 
   http.post(getApiUrl("/projects"), async ({ request }) => {
@@ -47,6 +116,44 @@ export const handlers = [
 
     projects = [project, ...projects];
     return HttpResponse.json({ data: project }, { status: 201 });
+  }),
+
+  http.patch(`${getApiUrl("/projects")}/:id`, async ({ params, request }) => {
+    const project = projects.find(({ id }) => id === params.id);
+
+    if (!project) {
+      return HttpResponse.json(
+        { error: { code: "NOT_FOUND", message: "Project not found." } },
+        { status: 404 },
+      );
+    }
+
+    const parsed = updateProjectSchema.safeParse(await request.json());
+
+    if (!parsed.success) {
+      return HttpResponse.json(
+        {
+          error: {
+            code: "VALIDATION_ERROR",
+            message: "Check the submitted fields.",
+            details: parsed.error.flatten(),
+          },
+        },
+        { status: 400 },
+      );
+    }
+
+    const updatedProject: Project = {
+      ...project,
+      ...parsed.data,
+      description: parsed.data.description || null,
+      updatedAt: new Date().toISOString(),
+    };
+    projects = projects.map((candidate) =>
+      candidate.id === project.id ? updatedProject : candidate,
+    );
+
+    return HttpResponse.json({ data: updatedProject });
   }),
 
   http.delete(`${getApiUrl("/projects")}/:id`, ({ params }) => {

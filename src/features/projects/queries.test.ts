@@ -4,8 +4,17 @@ import { projectKeys, projectQueries } from "@/features/projects/queries";
 
 describe("projectQueries", () => {
   it("uses the shared list cache contract", () => {
-    expect(projectQueries.list().queryKey).toEqual(projectKeys.list({}));
-    expect(projectQueries.list().meta).toEqual({
+    const filters = {
+      search: "portal",
+      sort: "name-asc" as const,
+      page: 2,
+      pageSize: 10,
+    };
+
+    expect(projectQueries.list(filters).queryKey).toEqual(
+      projectKeys.list(filters),
+    );
+    expect(projectQueries.list(filters).meta).toEqual({
       suppressErrorToast: true,
     });
   });

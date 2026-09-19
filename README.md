@@ -21,7 +21,7 @@ The goal is simple: clone it and start on product UI. Routing, query state, vali
 | Security             | CSP, secure response headers and automated dependency auditing              |
 | Workflow             | pnpm, Lefthook, Commitlint, Dependabot and GitHub Actions                   |
 
-The Projects page demonstrates the complete frontend path from a validated form through a TanStack Query mutation to a typed external REST contract. Development and E2E use the same contract through MSW; production points it at your API.
+The Projects page demonstrates the complete frontend path from validated create and edit forms through TanStack Query mutations to a typed external REST contract. Its debounced search, sorting and numbered pagination are URL-backed, so list views remain shareable and browser navigation works as expected. Development and E2E use the same contract through MSW; production points it at your API.
 
 ## Quick start
 
@@ -98,6 +98,22 @@ The example expects one of two envelopes:
 { data: T }
 { error: { code: string; message: string; details?: unknown } }
 ```
+
+The Projects list calls `GET /projects` with `search`, `sort`, `page` and `pageSize` query parameters. Its validated response keeps pagination metadata inside the success envelope:
+
+```ts
+{
+  data: {
+    items: Project[];
+    page: number;
+    pageSize: number;
+    total: number;
+    totalPages: number;
+  }
+}
+```
+
+Create, update and delete use `POST /projects`, `PATCH /projects/:id` and `DELETE /projects/:id`. Edit and delete optimistically update the active list and roll back on failure before invalidating every project-list variant.
 
 The default client has a 15-second timeout and supports empty `204` responses. TanStack Query passes its `AbortSignal` through feature API functions, so canceled queries also cancel their network requests.
 

@@ -1,4 +1,4 @@
-import { FolderKanban, Trash2 } from "lucide-react";
+import { FolderKanban, Pencil, Trash2 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import type { Project } from "@/features/projects/schemas";
@@ -7,16 +7,20 @@ type ProjectCardProps = {
   project: Project;
   locale: string;
   deleteLabel: string;
+  editLabel: string;
   isDeleting?: boolean;
   onDelete?: (id: string) => void;
+  onEdit?: (project: Project) => void;
 };
 
 export function ProjectCard({
   project,
   locale,
   deleteLabel,
+  editLabel,
   isDeleting = false,
   onDelete,
+  onEdit,
 }: ProjectCardProps) {
   return (
     <article className="border-border flex items-start gap-4 rounded-xl border p-4">
@@ -36,16 +40,27 @@ export function ProjectCard({
           )}
         </time>
       </div>
-      <Button
-        type="button"
-        variant="ghost"
-        size="icon"
-        aria-label={deleteLabel}
-        disabled={isDeleting}
-        onClick={() => onDelete?.(project.id)}
-      >
-        <Trash2 className="text-destructive size-4" />
-      </Button>
+      <div className="flex shrink-0 items-center gap-1">
+        <Button
+          type="button"
+          variant="ghost"
+          size="icon"
+          aria-label={editLabel}
+          onClick={() => onEdit?.(project)}
+        >
+          <Pencil className="size-4" />
+        </Button>
+        <Button
+          type="button"
+          variant="ghost"
+          size="icon"
+          aria-label={deleteLabel}
+          disabled={isDeleting}
+          onClick={() => onDelete?.(project.id)}
+        >
+          <Trash2 className="text-destructive size-4" />
+        </Button>
+      </div>
     </article>
   );
 }
