@@ -16,6 +16,7 @@ The goal is simple: clone it and start on product UI. Routing, query state, vali
 | UI                   | shadcn/ui (Radix), Tailwind CSS v4, semantic design tokens and dark mode    |
 | Internationalization | `next-intl`, locale-prefixed routing, English and Bosnian                   |
 | Quality              | ESLint, Prettier, Vitest, Playwright, Storybook and accessibility checks    |
+| Performance          | Core Web Vitals reporting, bundle analysis and Lighthouse CI budgets        |
 | Security             | CSP, secure response headers and automated dependency auditing              |
 | Workflow             | pnpm, Lefthook, Commitlint, Dependabot and GitHub Actions                   |
 
@@ -192,24 +193,47 @@ The application shell provides a localized skip link that moves keyboard focus d
 
 Playwright runs axe against the home, Projects and not-found routes across both locales and light and dark themes. Serious and critical WCAG A/AA violations fail the E2E job. Automated checks do not replace manual keyboard and screen-reader testing; they keep common regressions from reaching review unnoticed.
 
+## Performance
+
+The isolated `WebVitals` client component forwards Next.js Core Web Vitals through a provider-neutral adapter. The default development adapter logs reports to the browser console; production is a no-op until the application configures its analytics provider in `src/instrumentation-client.ts`:
+
+```ts
+import { configurePerformanceReporter } from "@/lib/performance/reporting";
+
+configurePerformanceReporter({
+  reportWebVital({ metric, timestamp }) {
+    analytics.capture("web_vital", { ...metric, timestamp });
+  },
+});
+```
+
+Reports contain only the metric values and timestamp. Performance entries and concrete URLs are not copied automatically; normalize route names explicitly in a provider adapter if the application needs per-route distributions.
+
+`pnpm analyze` opens the native Next.js 16 Turbopack analyzer. Use `pnpm analyze:output` to write a shareable report under `.next/diagnostics/analyze`.
+
+`pnpm performance:check` builds the production application and runs Lighthouse three times against the home and Projects routes using the pinned Playwright Chromium. CI blocks regressions in script and total transfer size, total blocking time, and cumulative layout shift. LCP and the aggregate performance score are warnings because they are more sensitive to runner variance. Reports remain on the local filesystem and are uploaded as private CI artifacts only when the job fails.
+
 ## Commands
 
-| Command                   | Purpose                               |
-| ------------------------- | ------------------------------------- |
-| `pnpm dev`                | Start the development server          |
-| `pnpm build`              | Create a production build             |
-| `pnpm audit:dependencies` | Audit production dependencies         |
-| `pnpm lint`               | Run ESLint with zero warnings allowed |
-| `pnpm typegen`            | Generate Next.js and message types    |
-| `pnpm typecheck`          | Run strict TypeScript checks          |
-| `pnpm test`               | Run the Vitest suite once             |
-| `pnpm test:coverage`      | Generate test coverage                |
-| `pnpm test:e2e`           | Run Playwright browser tests          |
-| `pnpm test:e2e:a11y`      | Run browser accessibility checks      |
-| `pnpm test:e2e:ui`        | Open Playwright's interactive runner  |
-| `pnpm storybook`          | Start Storybook on port 6006          |
-| `pnpm build-storybook`    | Build static Storybook output         |
-| `pnpm format`             | Format the repository                 |
+| Command                   | Purpose                                |
+| ------------------------- | -------------------------------------- |
+| `pnpm dev`                | Start the development server           |
+| `pnpm build`              | Create a production build              |
+| `pnpm analyze`            | Open the Next.js bundle analyzer       |
+| `pnpm analyze:output`     | Write a static bundle analysis         |
+| `pnpm audit:dependencies` | Audit production dependencies          |
+| `pnpm lint`               | Run ESLint with zero warnings allowed  |
+| `pnpm typegen`            | Generate Next.js and message types     |
+| `pnpm typecheck`          | Run strict TypeScript checks           |
+| `pnpm test`               | Run the Vitest suite once              |
+| `pnpm test:coverage`      | Generate test coverage                 |
+| `pnpm test:e2e`           | Run Playwright browser tests           |
+| `pnpm test:e2e:a11y`      | Run browser accessibility checks       |
+| `pnpm test:e2e:ui`        | Open Playwright's interactive runner   |
+| `pnpm performance:check`  | Enforce Lighthouse performance budgets |
+| `pnpm storybook`          | Start Storybook on port 6006           |
+| `pnpm build-storybook`    | Build static Storybook output          |
+| `pnpm format`             | Format the repository                  |
 
 ## End-to-end tests
 
