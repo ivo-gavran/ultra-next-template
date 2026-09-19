@@ -1,7 +1,25 @@
+import type { Metadata } from "next";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 
 import { ProjectManager } from "@/components/projects/project-manager";
 import { getRouteLocale } from "@/i18n/params";
+import { createPageMetadata } from "@/lib/metadata";
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const locale = await getRouteLocale(params);
+  const t = await getTranslations({ locale, namespace: "Projects" });
+
+  return createPageMetadata({
+    description: t("projectsDescription"),
+    locale,
+    path: "/projects",
+    title: t("projectsTitle"),
+  });
+}
 
 export default async function ProjectsPage({
   params,

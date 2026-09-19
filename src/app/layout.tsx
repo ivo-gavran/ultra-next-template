@@ -2,13 +2,23 @@ import type { Metadata } from "next";
 import { getLocale } from "next-intl/server";
 
 import { WebVitals } from "@/components/providers/web-vitals";
+import { siteConfig } from "@/config/site";
 
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: { default: "Ultra Next", template: "%s · Ultra Next" },
-  description:
-    "A production-minded Next.js frontend starter with typed API boundaries, query state, i18n and a complete quality toolchain.",
+  metadataBase: new URL(siteConfig.url),
+  title: {
+    default: siteConfig.name,
+    template: `%s · ${siteConfig.name}`,
+  },
+  description: siteConfig.localized[siteConfig.defaultLocale].description,
+  applicationName: siteConfig.name,
+  formatDetection: {
+    address: false,
+    email: false,
+    telephone: false,
+  },
 };
 
 export default async function RootLayout({

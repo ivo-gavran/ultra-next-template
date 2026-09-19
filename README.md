@@ -9,6 +9,7 @@ The goal is simple: clone it and start on product UI. Routing, query state, vali
 | Area                 | Stack                                                                       |
 | -------------------- | --------------------------------------------------------------------------- |
 | Framework            | Next.js 16 App Router, React 19 and strict TypeScript                       |
+| Metadata             | Typed site identity, localized SEO metadata, sitemap, robots and manifest   |
 | API integration      | Typed Axios client, strict Zod validation and auth-ready request hooks      |
 | Data fetching        | TanStack Query with reusable keys, pagination and optimistic-update helpers |
 | Development API      | MSW browser mocks that keep the template runnable without a backend         |
@@ -56,11 +57,26 @@ Application composition stays thin, features own their schemas and data operatio
 
 UI primitives are source-owned shadcn/ui components configured through `components.json`. Storybook documents customized primitives, theme foundations and feature-level states instead of duplicating the complete shadcn catalog.
 
-## External API contract
+## Application identity and metadata
 
-Configure the backend URL at build time:
+`src/config/site.ts` is the single source of truth for the application name, short name, localized descriptions, supported locales and public routes. Set the canonical deployment origin separately for each environment:
 
 ```bash
+NEXT_PUBLIC_APP_URL=https://app.example.com
+```
+
+The value must be an origin without a path, query, fragment or credentials. Like every `NEXT_PUBLIC_*` value, it is embedded during `next build`.
+
+The home and Projects pages emit localized titles, descriptions, canonical URLs, language alternates, Open Graph fields and Twitter card metadata through the shared `createPageMetadata` helper. The root metadata supplies the title template and application identity. Next.js metadata routes generate `/manifest.webmanifest`, `/robots.txt` and `/sitemap.xml` from the same config, so they cannot drift independently.
+
+When adding an indexable page, add its path and crawl policy to `publicRoutes`, then use `createPageMetadata` in that page. Authenticated or private routes should stay out of `publicRoutes` and explicitly opt out of indexing in their own metadata.
+
+## External API contract
+
+Configure the application origin and backend URL at build time:
+
+```bash
+NEXT_PUBLIC_APP_URL=https://app.example.com
 NEXT_PUBLIC_API_URL=https://api.example.com
 NEXT_PUBLIC_API_MOCKING=disabled
 ```

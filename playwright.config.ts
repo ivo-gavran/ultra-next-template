@@ -27,6 +27,7 @@ export default defineConfig({
     reuseExistingServer: !process.env.CI,
     timeout: 120_000,
     env: {
+      NEXT_PUBLIC_APP_URL: baseURL,
       NEXT_PUBLIC_API_URL: "https://api.ultra.test",
       NEXT_PUBLIC_API_MOCKING: "enabled",
     },
