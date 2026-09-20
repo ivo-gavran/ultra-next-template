@@ -2,9 +2,9 @@ import type { Metadata } from "next";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { Suspense } from "react";
 
-import { ProjectManager } from "@/components/projects/project-manager";
 import { LoadingState } from "@/components/ui/async-state";
 import { Badge } from "@/components/ui/badge";
+import { ProjectsView } from "@/features/projects/components/projects-view";
 import { getRouteLocale } from "@/i18n/params";
 import { createPageMetadata } from "@/lib/metadata";
 
@@ -47,7 +47,7 @@ export default async function ProjectsPage({
         </p>
       </header>
       <Suspense fallback={<LoadingState label={t("loading")} />}>
-        <ProjectManager />
+        <ProjectsView />
       </Suspense>
     </div>
   );
