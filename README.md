@@ -1,113 +1,158 @@
 # Ultra Next Template
 
-A production-minded Next.js frontend starter with a typed external API boundary.
+A production-ready Next.js frontend starter for building product interfaces without setting up the same foundations again.
 
-The goal is simple: clone it and start on product UI. Routing, query state, validated API responses, forms, themes, translations, component documentation, tests and CI are already connected without prescribing a backend, database or authentication provider.
+It includes routing, translations, theming, forms, a typed API layer, server-state management, tests, Storybook and CI. It intentionally does not include a backend, database or authentication provider.
 
-## What is included
+## What's included
 
-| Area                 | Stack                                                                       |
-| -------------------- | --------------------------------------------------------------------------- |
-| Framework            | Next.js 16 App Router, React 19 and strict TypeScript                       |
-| Metadata             | Typed site identity, localized SEO metadata, sitemap, robots and manifest   |
-| API integration      | Typed Axios client, strict Zod validation and auth-ready request hooks      |
-| Data fetching        | TanStack Query with reusable keys, pagination and optimistic-update helpers |
-| Development API      | MSW browser mocks that keep the template runnable without a backend         |
-| Forms                | React Hook Form and shared Zod schemas                                      |
-| UI                   | shadcn/ui (Radix), Tailwind CSS v4, semantic design tokens and dark mode    |
-| Internationalization | `next-intl`, locale-prefixed routing, English and Bosnian                   |
-| Quality              | Coverage gates, Playwright visual tests, Storybook and accessibility checks |
-| Performance          | Core Web Vitals reporting, bundle analysis and Lighthouse CI budgets        |
-| Security             | CSP, secure response headers and automated dependency auditing              |
-| Workflow             | pnpm, Lefthook, Commitlint, Dependabot and GitHub Actions                   |
+- Next.js 16 App Router, React 19 and strict TypeScript
+- Tailwind CSS v4 and source-owned shadcn/ui components
+- Light and dark themes
+- English and Bosnian routes with `next-intl`
+- Axios API client with Zod response validation
+- TanStack Query, TanStack Table and development Query DevTools
+- React Hook Form with shared Zod schemas
+- MSW browser mocks, so the app works without a backend
+- Localized metadata, sitemap, robots and web manifest
+- Vitest, Playwright, accessibility and visual regression tests
+- Storybook, Lighthouse performance budgets and GitHub Actions
+- Secure response headers, dependency audits and generated SVG icons
 
-The Projects page demonstrates the complete frontend path from validated create and edit forms through TanStack Query mutations to a typed external REST contract. Its debounced search, sorting and numbered pagination are URL-backed, so list views remain shareable and browser navigation works as expected. Development and E2E use the same contract through MSW; production points it at your API.
+The Projects page is the reference feature. It demonstrates validated forms, URL-backed search and pagination, a reusable data table, optimistic updates, loading and error states, and a typed REST API contract.
 
-## Quick start
+## Requirements
 
-Requirements: Node.js 24+ and pnpm 11+.
+- Node.js 24 or newer
+- pnpm 11 or newer
+- Docker Desktop only if you want to run the canonical visual tests locally
+
+## Getting started
+
+Create a repository from this template, or clone it directly:
 
 ```bash
+git clone https://github.com/ivo-gavran/ultra-next-template.git my-app
+cd my-app
 pnpm install
-pnpm run setup
+pnpm setup
 pnpm dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000). The development mock is enabled by default, so the Projects demo works without any additional service.
+Open [http://localhost:3000](http://localhost:3000).
 
-`pnpm run setup` asks for the product identity, package name, public origins and default locale, then creates `.env.local`. To keep the template defaults instead, run `pnpm run setup -- --yes`.
-
-## Personalizing the template
-
-Run the idempotent setup command whenever you want to update the starter identity:
+`pnpm setup` asks for the app name, package name, public URLs and default locale. It updates the shared app configuration and creates `.env.local`. To accept all template defaults without prompts, run:
 
 ```bash
-pnpm run setup
+pnpm setup -- --yes
 ```
 
-It updates the package name and description, the shared site identity in `src/config/site-config.json`, the first README heading, `.env.example` and the ignored `.env.local`. It validates package names, locales and public origins before writing anything.
+Development API mocking is enabled by default, so the Projects demo works immediately.
 
-Automation can supply every value without prompts, and `--dry-run` previews the affected files:
+## Environment variables
 
 ```bash
-pnpm run setup -- \
-  --name "Acme Portal" \
-  --short-name "Acme" \
-  --package-name "acme-portal" \
-  --app-url "https://app.acme.com" \
-  --api-url "https://api.acme.com" \
-  --default-locale "en" \
-  --description-en "Acme customer portal." \
-  --description-bs "Acme korisnički portal." \
-  --yes \
-  --dry-run
+NEXT_PUBLIC_APP_URL=http://localhost:3000
+NEXT_PUBLIC_API_URL=http://localhost:4000
+NEXT_PUBLIC_API_MOCKING=enabled
 ```
 
-Use `pnpm run setup -- --help` for the complete flag list.
+| Variable                  | Purpose                                                |
+| ------------------------- | ------------------------------------------------------ |
+| `NEXT_PUBLIC_APP_URL`     | Public app origin used for canonical URLs and metadata |
+| `NEXT_PUBLIC_API_URL`     | Base URL of the external REST API                      |
+| `NEXT_PUBLIC_API_MOCKING` | Use `enabled` locally or `disabled` with a real API    |
+
+These values are public and embedded during `next build`. Never store secrets in `NEXT_PUBLIC_*` variables.
 
 ## Project structure
 
 ```text
 src/
-├── app/                    # Localized App Router pages and route fallbacks
+├── app/                 # Localized App Router pages and route fallbacks
 ├── components/
-│   ├── icons/              # Generated, typed custom SVG components
-│   ├── layout/             # Header, locale and theme controls
-│   ├── projects/           # Example feature UI
-│   ├── providers/          # Query, theme, toast and mock providers
-│   └── ui/                 # Reusable design-system primitives
-├── config/                 # Site identity and validated public environment
-├── features/               # API functions, schemas and query hooks
-├── i18n/                   # Routing, navigation and request config
-├── lib/                    # API, auth adapters, errors, queries and utilities
-├── mocks/                  # Development API contract handlers
-└── test/                   # Shared unit-test setup
-assets/icons/               # Source SVG artwork
-docs/                       # Integration guides
-scripts/                    # Setup and generated-artifact checks
+│   ├── icons/           # Generated SVG React components
+│   ├── layout/          # Application shell and controls
+│   ├── projects/        # Example feature UI
+│   ├── providers/       # Query, theme, toast and mock providers
+│   └── ui/              # Reusable UI primitives
+├── config/              # App identity and public environment config
+├── features/            # Feature schemas, API functions and query hooks
+├── i18n/                # Locale routing and request configuration
+├── lib/                 # API, auth, query, error and reporting utilities
+└── mocks/               # Development API handlers
+
+messages/                # Translation files
+assets/icons/            # Source SVG files
+docs/                    # Integration guides
+e2e/                     # Browser and visual tests
 ```
 
-Application composition stays thin, features own their schemas and data operations, reusable UI stays independent, and backend-specific decisions stay outside the template.
+Features own their schemas and data operations. Reusable UI stays independent, and backend-specific decisions remain outside the starter.
 
-UI primitives are source-owned shadcn/ui components configured through `components.json`. Storybook documents customized primitives, theme foundations and feature-level states instead of duplicating the complete shadcn catalog.
+## Connecting a real API
 
-## Application identity and metadata
-
-`src/config/site-config.json` is the editable source of truth for the application name, short name, localized descriptions and default locale. `src/config/site.ts` combines it with validated environment values, supported locales and public routes. Set the canonical deployment origin separately for each environment:
+Set your API URL and disable mocks:
 
 ```bash
-NEXT_PUBLIC_APP_URL=https://app.example.com
+NEXT_PUBLIC_API_URL=https://api.example.com
+NEXT_PUBLIC_API_MOCKING=disabled
 ```
 
-The value must be an origin without a path, query, fragment or credentials. Like every `NEXT_PUBLIC_*` value, it is embedded during `next build`.
+The shared API client expects these response envelopes:
 
-The home and Projects pages emit localized titles, descriptions, canonical URLs, language alternates, Open Graph fields and Twitter card metadata through the shared `createPageMetadata` helper. The root metadata supplies the title template and application identity. Next.js metadata routes generate `/manifest.webmanifest`, `/robots.txt` and `/sitemap.xml` from the same config, so they cannot drift independently.
+```ts
+// Success
+{ data: T }
 
-When adding an indexable page, add its path and crawl policy to `publicRoutes`, then use `createPageMetadata` in that page. Authenticated or private routes should stay out of `publicRoutes` and explicitly opt out of indexing in their own metadata.
+// Error
+{ error: { code: string; message: string; details?: unknown } }
+```
 
-## External API contract
+Each feature keeps its Zod schemas, API functions and TanStack Query definitions together. Update the schema, API function and MSW handler together when a contract changes.
 
-Configure the application origin and backend URL at build time:
+Authentication hooks are provider-neutral and support bearer tokens, cookie sessions and a single shared refresh request. See [the authentication guide](docs/authentication.md) before connecting an auth provider.
+
+## Common commands
+
+| Command                   | Purpose                                         |
+| ------------------------- | ----------------------------------------------- |
+| `pnpm setup`              | Personalize the starter and create `.env.local` |
+| `pnpm dev`                | Start the development server                    |
+| `pnpm build`              | Create a production build                       |
+| `pnpm lint`               | Run ESLint                                      |
+| `pnpm typecheck`          | Generate types and run TypeScript checks        |
+| `pnpm test`               | Run unit tests                                  |
+| `pnpm test:coverage`      | Run unit tests with coverage gates              |
+| `pnpm test:e2e`           | Run Playwright browser tests                    |
+| `pnpm test:e2e:a11y`      | Run accessibility checks                        |
+| `pnpm test:visual:docker` | Compare canonical visual snapshots              |
+| `pnpm storybook`          | Start Storybook on port 6006                    |
+| `pnpm performance:check`  | Run the production Lighthouse checks            |
+| `pnpm analyze`            | Open the Next.js bundle analyzer                |
+| `pnpm icons:generate`     | Generate typed components from `assets/icons`   |
+| `pnpm format`             | Format the repository                           |
+
+Install Playwright's browser once before running E2E tests locally:
+
+```bash
+pnpm exec playwright install chromium
+```
+
+## Customizing the starter
+
+- App identity: edit `src/config/site-config.json` or rerun `pnpm setup`.
+- Translations: update `messages/en.json` and `messages/bs.json` together. English is the type-safe source locale.
+- UI: edit the source-owned primitives in `src/components/ui` and document meaningful states in Storybook.
+- Icons: add SVG files to `assets/icons`, then run `pnpm icons:generate`.
+- API behavior: adapt `src/lib/api/client.ts` if your backend uses a different response contract.
+- Monitoring: connect your providers in `src/instrumentation.ts` and `src/instrumentation-client.ts`.
+
+## CI and deployment
+
+GitHub Actions verifies formatting, linting, types, generated icons, unit coverage, Storybook, production builds, E2E tests, accessibility, visual snapshots, performance budgets and dependency security.
+
+For production, set these variables in the build environment:
 
 ```bash
 NEXT_PUBLIC_APP_URL=https://app.example.com
@@ -115,249 +160,7 @@ NEXT_PUBLIC_API_URL=https://api.example.com
 NEXT_PUBLIC_API_MOCKING=disabled
 ```
 
-Feature API functions use the shared `apiClient`. It resolves relative paths against `NEXT_PUBLIC_API_URL`, supports path and query parameters, rejects transport and HTTP failures with a structured `AppError`, and strictly validates successful JSON with the supplied Zod schema.
-
-```ts
-return apiClient.get("/projects/:id", {
-  pathParams: { id },
-  query: { include: "members" },
-  schema: projectResponseSchema,
-  signal,
-});
-```
-
-The example expects one of two envelopes:
-
-```ts
-{ data: T }
-{ error: { code: string; message: string; details?: unknown } }
-```
-
-The Projects list calls `GET /projects` with `search`, `sort`, `page` and `pageSize` query parameters. Its validated response keeps pagination metadata inside the success envelope:
-
-```ts
-{
-  data: {
-    items: Project[];
-    page: number;
-    pageSize: number;
-    total: number;
-    totalPages: number;
-  }
-}
-```
-
-Create, update and delete use `POST /projects`, `PATCH /projects/:id` and `DELETE /projects/:id`. Edit and delete optimistically update the active list and roll back on failure before invalidating every project-list variant.
-
-The default client has a 15-second timeout and supports empty `204` responses. TanStack Query passes its `AbortSignal` through feature API functions, so canceled queries also cancel their network requests.
-
-Create another client when the application needs cookies, dynamic headers or token authentication:
-
-```ts
-const authenticatedApi = createApiClient({
-  baseURL: publicEnv.NEXT_PUBLIC_API_URL,
-  withCredentials: true,
-  getHeaders: () => ({ "X-App-Version": appVersion }),
-  auth: {
-    getAccessToken,
-    refreshSession,
-    onUnauthorized,
-  },
-});
-```
-
-Only one `refreshSession` call runs when concurrent requests receive `401`; waiting requests retry once with the latest token. Use `skipAuth` for public endpoints and `skipAuthRefresh` for auth endpoints that must never enter the refresh flow. The hooks intentionally do not prescribe an authentication provider or token storage mechanism.
-
-`createApiAuthHooks` adapts bearer-token and cookie-based sessions to this client contract. See the [authentication integration guide](docs/authentication.md) for provider examples, server-side route protection and security constraints.
-
-Adapt the error-envelope parsing in `src/lib/api/client.ts` if your backend uses a different contract.
-
-`NEXT_PUBLIC_*` values are embedded into the browser bundle during `next build`. Set them in the build environment, not only when starting the server.
-
-## Development mocks
-
-With `NEXT_PUBLIC_API_MOCKING=enabled`, `ApiMockProvider` starts the MSW service worker before rendering query consumers. Handlers in `src/mocks/handlers.ts` implement the same schemas and URLs as the real feature API.
-
-Mocks are for local development and browser tests. Production builds should use:
-
-```bash
-NEXT_PUBLIC_API_MOCKING=disabled
-```
-
-When the contract changes, update the feature schema, API function and mock handler together. Runtime parsing then catches backend drift before malformed data reaches the UI.
-
-## Query conventions
-
-Each feature owns a cache contract built with `createEntityQueryFactory`:
-
-```ts
-const projectQueryFactory = createEntityQueryFactory("projects");
-
-export const projectKeys = projectQueryFactory.keys;
-
-export const projectQueries = {
-  list: () =>
-    projectQueryFactory.list(
-      {},
-      {
-        queryFn: async ({ signal }) => (await getProjects({ signal })).data,
-      },
-    ),
-};
-```
-
-Consumers continue to use the native TanStack API:
-
-```ts
-const projects = useQuery(projectQueries.list());
-await queryClient.invalidateQueries({ queryKey: projectKeys.lists() });
-```
-
-The factory standardizes the key hierarchy for finite lists, infinite lists and details while returning native `queryOptions` and `infiniteQueryOptions` objects. Pagination helpers and optimistic updates with rollback live in `src/lib/query`. Loading, error/retry and empty states use shared accessible UI primitives.
-
-TanStack Query DevTools are mounted automatically in development and render nothing in production.
-
-## Error and route resilience
-
-Stable external error codes map to localized user messages instead of displaying backend copy directly. Query and mutation failures flow through the shared toast provider, while features can suppress the global notification when they render an inline retry state.
-
-App Router failures use application-owned fallbacks. Localized route errors provide retry actions and optional error references, unknown URLs render a locale-aware 404, and the Projects route has an accessible streaming loading state.
-
-## Observability
-
-Unexpected API, query, mutation, route-boundary and server-rendering failures flow through the provider-neutral `reportAppError` pipeline. Expected operational failures such as cancellation, validation, unauthorized, forbidden and not-found responses stay out of error reporting unless they unexpectedly reach an error boundary.
-
-`src/instrumentation.ts` uses the native Next.js `onRequestError` hook for server failures. Client error boundaries and TanStack Query use the same contract. The same error object is reported only once when it passes through multiple layers.
-
-Configure a production provider once in its client and server instrumentation entry points:
-
-```ts
-configureErrorReporter({
-  captureException({ error, context, timestamp }) {
-    monitoring.captureException(error, { context, timestamp });
-  },
-});
-```
-
-Until an adapter is configured, reports use a console reporter that remains useful in local development and platform logs.
-
-The pipeline creates a safe error copy without Axios causes or application details, redacts metadata keys such as tokens, cookies, passwords and API keys, handles circular metadata, and contains reporter failures. Request headers, bodies, query values and concrete request URLs are never added automatically.
-
-Set `meta: { suppressErrorReport: true }` on an intentionally handled TanStack query or mutation when it should not reach the reporter. This is separate from `suppressErrorToast`.
-
-## Security baseline
-
-Every route receives a Content Security Policy and defensive browser headers. The policy permits the configured `NEXT_PUBLIC_API_URL` origin for browser requests, disables framing and object embedding, limits powerful browser features, removes the `X-Powered-By` header, and enables HSTS plus insecure-request upgrades in production.
-
-The default CSP intentionally uses `unsafe-inline` for Next.js scripts and styles so the policy does not itself force routes into dynamic rendering. A nonce-based strict CSP requires dynamic rendering in Next.js. If a product already renders every request dynamically and needs that stronger tradeoff, migrate the policy to nonces in `proxy.ts` using the current Next.js CSP guide.
-
-Add explicit CSP sources when integrating analytics, remote images, WebSockets or an external authentication provider. Cross-Origin-Opener-Policy is intentionally not enabled because it can break OAuth popup flows. Do not add secrets to `NEXT_PUBLIC_*` variables; Next.js embeds them in the client bundle.
-
-Dependabot checks npm packages and GitHub Actions weekly. CI audits the installed production dependency tree and fails when the package registry reports a known high or critical vulnerability. Registry availability does not make the quality pipeline fail. Enable GitHub's dependency graph and Dependabot security updates in the repository settings for additional alerts and automated security-fix pull requests.
-
-## Accessibility
-
-The application shell provides a localized skip link that moves keyboard focus directly to the main content. Form validation connects invalid controls to announced error messages, while loading states and notifications use appropriate live-region semantics.
-
-Playwright runs axe against the home, Projects and not-found routes across both locales and light and dark themes. Serious and critical WCAG A/AA violations fail the E2E job. Automated checks do not replace manual keyboard and screen-reader testing; they keep common regressions from reaching review unnoticed.
-
-User-facing accessibility labels in the shared shell are translated with the rest of the interface. Decorative spinners stay out of the accessibility tree by default; loading containers own the announced status text.
-
-## Custom SVG icons
-
-Keep raw artwork in `assets/icons`, then generate typed React components:
-
-```bash
-pnpm icons:generate
-```
-
-Import generated icons from `@/components/icons/generated`. Do not edit that directory by hand: CI runs `pnpm icons:check` and fails when committed components differ from their source SVGs. The build-time generator avoids custom webpack or Turbopack loaders, so the same icons work in Next.js, Storybook and tests.
-
-## Visual regression tests
-
-The regular E2E suite excludes visual snapshots so functional browser tests stay portable. A separate suite builds the production application and captures the home shell in light, dark and mobile modes plus the Projects workflow shell.
-
-Create or intentionally refresh the Linux baselines with the pinned official Playwright container:
-
-```bash
-pnpm test:visual:update:docker
-```
-
-Review and commit the PNG changes under `e2e/visual.spec.ts-snapshots`. Run `pnpm test:visual:docker` to compare them locally in the canonical environment. CI runs `pnpm test:visual` in the same container image and uploads the visual diff only on failure. Keep the Docker image version in `scripts/run-visual-tests-docker.mjs` and `.github/workflows/ci.yml` aligned with `@playwright/test` when upgrading Playwright.
-
-## Performance
-
-The isolated `WebVitals` client component forwards Next.js Core Web Vitals through a provider-neutral adapter. The default development adapter logs reports to the browser console; production is a no-op until the application configures its analytics provider in `src/instrumentation-client.ts`:
-
-```ts
-import { configurePerformanceReporter } from "@/lib/performance/reporting";
-
-configurePerformanceReporter({
-  reportWebVital({ metric, timestamp }) {
-    analytics.capture("web_vital", { ...metric, timestamp });
-  },
-});
-```
-
-Reports contain only the metric values and timestamp. Performance entries and concrete URLs are not copied automatically; normalize route names explicitly in a provider adapter if the application needs per-route distributions.
-
-`pnpm analyze` opens the native Next.js 16 Turbopack analyzer. Use `pnpm analyze:output` to write a shareable report under `.next/diagnostics/analyze`.
-
-`pnpm performance:check` builds the production application and runs Lighthouse three times against the home and Projects routes using the pinned Playwright Chromium. CI blocks regressions in script and total transfer size, total blocking time, and cumulative layout shift. LCP and the aggregate performance score are warnings because they are more sensitive to runner variance. Reports remain on the local filesystem and are uploaded as private CI artifacts only when the job fails.
-
-## Commands
-
-| Command                          | Purpose                                      |
-| -------------------------------- | -------------------------------------------- |
-| `pnpm run setup`                 | Personalize identity, origins and locale     |
-| `pnpm dev`                       | Start the development server                 |
-| `pnpm build`                     | Create a production build                    |
-| `pnpm analyze`                   | Open the Next.js bundle analyzer             |
-| `pnpm analyze:output`            | Write a static bundle analysis               |
-| `pnpm audit:dependencies`        | Audit production dependencies                |
-| `pnpm icons:generate`            | Generate React components from source SVGs   |
-| `pnpm icons:check`               | Verify generated icons are current           |
-| `pnpm lint`                      | Run ESLint with zero warnings allowed        |
-| `pnpm typegen`                   | Generate Next.js and message types           |
-| `pnpm typecheck`                 | Run strict TypeScript checks                 |
-| `pnpm test`                      | Run the Vitest suite once                    |
-| `pnpm test:coverage`             | Enforce critical-module coverage thresholds  |
-| `pnpm test:e2e`                  | Run functional Playwright browser tests      |
-| `pnpm test:e2e:a11y`             | Run browser accessibility checks             |
-| `pnpm test:e2e:ui`               | Open Playwright's interactive runner         |
-| `pnpm test:visual`               | Compare visual snapshots on Linux            |
-| `pnpm test:visual:docker`        | Compare canonical visual snapshots in Docker |
-| `pnpm test:visual:update:docker` | Refresh canonical visual baselines in Docker |
-| `pnpm performance:check`         | Enforce Lighthouse performance budgets       |
-| `pnpm storybook`                 | Start Storybook on port 6006                 |
-| `pnpm build-storybook`           | Build static Storybook output                |
-| `pnpm format`                    | Format the repository                        |
-
-## End-to-end tests
-
-Install Chromium once, then run the suite:
-
-```bash
-pnpm exec playwright install chromium
-pnpm test:e2e
-```
-
-Playwright starts Next.js on port `3100` with the external API contract mocked in the browser. Tests cover locale routing, localized 404 handling, project CRUD, keyboard navigation and WCAG regression scans without Docker, a database or a live backend. Failure traces, screenshots and videos are written to ignored local report directories; CI uploads them only when the E2E job fails.
-
-## Adding a locale
-
-1. Add the locale to `src/i18n/routing.ts`.
-2. Copy a complete message file into `messages/<locale>.json`.
-3. Update the locale switcher if you want more than the included two-language toggle.
-4. Run `pnpm typecheck` and `pnpm test` to verify message keys and ICU arguments against the English source locale.
-
-`next-intl` derives namespaces, message keys, interpolation arguments and supported locale types from `messages/en.json` and `src/i18n/routing.ts`. English is the canonical message schema; every locale must preserve the same key tree and argument names.
-
-## CI and deployment
-
-GitHub Actions verifies generated icons, formatting, linting, types, critical-module coverage, Storybook, the production build, functional E2E tests, visual snapshots and performance budgets. Lefthook runs fast static checks before a commit, while Commitlint enforces Conventional Commits.
-
-Set `NEXT_PUBLIC_APP_URL`, `NEXT_PUBLIC_API_URL` and `NEXT_PUBLIC_API_MOCKING=disabled` in the production build environment, then deploy to any Node.js-compatible Next.js host. Configure CORS and the chosen authentication mechanism on the external backend for the deployed frontend origin.
+Then deploy the production build to any Node.js-compatible Next.js host. Configure CORS and authentication on the external backend for your frontend origin.
 
 ## License
 
