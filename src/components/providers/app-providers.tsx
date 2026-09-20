@@ -1,32 +1,11 @@
 "use client";
 
-import { QueryClientProvider } from "@tanstack/react-query";
-import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { useTranslations } from "next-intl";
 import { ThemeProvider } from "next-themes";
-import { useState } from "react";
 
 import { ApiMockProvider } from "@/components/providers/api-mock-provider";
-import { ToastProvider, useToast } from "@/components/ui/toast";
-import { useErrorMessage } from "@/lib/errors/use-error-message";
-import { createQueryClient } from "@/lib/query/client";
-
-function QueryProvider({ children }: { children: React.ReactNode }) {
-  const toast = useToast();
-  const getErrorMessage = useErrorMessage();
-  const [queryClient] = useState(() =>
-    createQueryClient({
-      notifyError: (error) => toast.error(getErrorMessage(error)),
-    }),
-  );
-
-  return (
-    <QueryClientProvider client={queryClient}>
-      {children}
-      <ReactQueryDevtools initialIsOpen={false} />
-    </QueryClientProvider>
-  );
-}
+import { QueryProvider } from "@/components/providers/query-provider";
+import { ToastProvider } from "@/components/ui/toast";
 
 export function AppProviders({ children }: { children: React.ReactNode }) {
   const t = useTranslations("Toast");
