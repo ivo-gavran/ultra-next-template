@@ -10,7 +10,7 @@ import {
   readSetupDefaults,
   toPackageName,
   validateSetupValues,
-} from "./setup.mjs";
+} from "./setup";
 
 const temporaryDirectories: string[] = [];
 
