@@ -30,9 +30,11 @@ test("projects workflow shell", async ({ page }) => {
   await page.emulateMedia({ colorScheme: "light", reducedMotion: "reduce" });
   await page.goto("/en/projects");
   await expect(
-    page.getByRole("heading", { level: 3, name: "Connect the real API" }),
+    page.getByRole("cell", { name: "Connect the real API", exact: true }),
   ).toBeVisible();
-
+  await expect(
+    page.getByRole("region", { name: "Overview" }).getByText("Total projects"),
+  ).toBeVisible();
   await expect(page).toHaveScreenshot("projects-light.png", {
     fullPage: true,
     stylePath,

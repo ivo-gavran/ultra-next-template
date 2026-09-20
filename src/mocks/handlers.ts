@@ -41,7 +41,29 @@ const initialProjects: Project[] = [
 
 let projects = initialProjects.map((project) => ({ ...project }));
 
+function buildProjectsSummary() {
+  const now = Date.now();
+  const thirtyDaysAgo = now - 30 * 24 * 60 * 60 * 1000;
+  const sevenDaysAgo = now - 7 * 24 * 60 * 60 * 1000;
+
+  return {
+    createdLast30Days: projects.filter(
+      ({ createdAt }) => new Date(createdAt).getTime() >= thirtyDaysAgo,
+    ).length,
+    documented: projects.filter(({ description }) => Boolean(description))
+      .length,
+    total: projects.length,
+    updatedLast7Days: projects.filter(
+      ({ updatedAt }) => new Date(updatedAt).getTime() >= sevenDaysAgo,
+    ).length,
+  };
+}
+
 export const handlers = [
+  http.get(`${getApiUrl("/projects")}/summary`, () =>
+    HttpResponse.json({ data: buildProjectsSummary() }),
+  ),
+
   http.get(getApiUrl("/projects"), ({ request }) => {
     const url = new URL(request.url);
     const parsedFilters = projectListFiltersSchema.safeParse({

@@ -41,9 +41,21 @@ export const projectsResponseSchema = z.object({ data: projectsPageSchema });
 
 export const projectResponseSchema = z.object({ data: projectSchema });
 
+export const projectsSummarySchema = z.object({
+  createdLast30Days: z.number().int().nonnegative(),
+  documented: z.number().int().nonnegative(),
+  total: z.number().int().nonnegative(),
+  updatedLast7Days: z.number().int().nonnegative(),
+});
+
+export const projectsSummaryResponseSchema = z.object({
+  data: projectsSummarySchema,
+});
+
 export type Project = z.infer<typeof projectSchema>;
 export type CreateProjectInput = z.infer<typeof createProjectSchema>;
 export type UpdateProjectInput = z.infer<typeof updateProjectSchema>;
 export type ProjectSort = z.infer<typeof projectSortSchema>;
 export type ProjectListFilters = z.infer<typeof projectListFiltersSchema>;
 export type ProjectsPage = z.infer<typeof projectsPageSchema>;
+export type ProjectsSummary = z.infer<typeof projectsSummarySchema>;
