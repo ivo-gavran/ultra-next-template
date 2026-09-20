@@ -3,6 +3,8 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 import { Suspense } from "react";
 
 import { ProjectManager } from "@/components/projects/project-manager";
+import { LoadingState } from "@/components/ui/async-state";
+import { Badge } from "@/components/ui/badge";
 import { getRouteLocale } from "@/i18n/params";
 import { createPageMetadata } from "@/lib/metadata";
 
@@ -32,21 +34,21 @@ export default async function ProjectsPage({
   const t = await getTranslations("Projects");
 
   return (
-    <section className="mx-auto max-w-5xl px-5 py-16">
-      <p className="text-primary text-sm font-semibold tracking-[0.18em] uppercase">
-        {t("eyebrow")}
-      </p>
-      <h1 className="mt-3 text-4xl font-semibold tracking-tight sm:text-5xl">
-        {t("title")}
-      </h1>
-      <p className="text-muted-foreground mt-4 mb-10 max-w-2xl text-lg leading-8">
-        {t("description")}
-      </p>
-      <Suspense
-        fallback={<p className="text-muted-foreground">{t("loading")}</p>}
-      >
+    <div className="mx-auto max-w-6xl px-5 py-12 sm:py-16">
+      <header className="border-border mb-10 border-b pb-8">
+        <Badge variant="secondary" className="h-6 px-2.5">
+          {t("eyebrow")}
+        </Badge>
+        <h1 className="mt-4 text-3xl font-semibold tracking-tight sm:text-4xl">
+          {t("title")}
+        </h1>
+        <p className="text-muted-foreground mt-3 max-w-2xl leading-7">
+          {t("description")}
+        </p>
+      </header>
+      <Suspense fallback={<LoadingState label={t("loading")} />}>
         <ProjectManager />
       </Suspense>
-    </section>
+    </div>
   );
 }

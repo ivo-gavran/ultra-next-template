@@ -5,6 +5,7 @@ import { z } from "zod";
 import {
   projectResponseSchema,
   projectsResponseSchema,
+  projectsSummaryResponseSchema,
   type CreateProjectInput,
   type ProjectListFilters,
   type UpdateProjectInput,
@@ -22,6 +23,13 @@ export function getProjects(
   return apiClient.get("/projects", {
     query: filters,
     schema: projectsResponseSchema,
+    ...(signal ? { signal } : {}),
+  });
+}
+
+export function getProjectsSummary({ signal }: RequestContext = {}) {
+  return apiClient.get("/projects/summary", {
+    schema: projectsSummaryResponseSchema,
     ...(signal ? { signal } : {}),
   });
 }

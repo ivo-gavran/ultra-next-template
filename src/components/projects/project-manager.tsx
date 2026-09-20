@@ -7,8 +7,9 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 
-import { ProjectCard } from "@/components/projects/project-card";
+import { ProjectDashboard } from "@/components/projects/project-dashboard";
 import { ProjectEditDialog } from "@/components/projects/project-edit-dialog";
+import { ProjectTable } from "@/components/projects/project-table";
 import {
   AlertDialog,
   AlertDialogCancel,
@@ -18,11 +19,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import {
-  EmptyState,
-  ErrorState,
-  LoadingState,
-} from "@/components/ui/async-state";
+import { EmptyState, ErrorState } from "@/components/ui/async-state";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -34,13 +31,6 @@ import {
 import { FormField } from "@/components/ui/form-field";
 import { Input } from "@/components/ui/input";
 import { Pagination } from "@/components/ui/pagination";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Spinner } from "@/components/ui/spinner";
 import { Textarea } from "@/components/ui/textarea";
 import {
@@ -105,6 +95,11 @@ export function ProjectManager() {
     [filters, pathname, router, serializedSearchParams],
   );
 
+  const changeSort = useCallback(
+    (sort: ProjectSort) => replaceFilters({ sort, page: 1 }),
+    [replaceFilters],
+  );
+
   const onSubmit = handleSubmit((input) => {
     createMutation.mutate(input, {
       onSuccess: () => {
@@ -137,15 +132,18 @@ export function ProjectManager() {
   };
 
   const page = projects.data;
+  const hasLoadError = projects.isError && !page;
 
   return (
-    <>
+    <div className="space-y-8">
+      <ProjectDashboard />
+
       <Card>
         <CardHeader>
-          <CardTitle>{t("projectsTitle")}</CardTitle>
-          <CardDescription>{t("projectsDescription")}</CardDescription>
+          <CardTitle className="text-base">{t("createTitle")}</CardTitle>
+          <CardDescription>{t("createDescription")}</CardDescription>
         </CardHeader>
-        <CardContent className="space-y-8">
+        <CardContent>
           <form
             className="grid gap-4 sm:grid-cols-[1fr_1.5fr_auto] sm:items-start"
             onSubmit={onSubmit}
@@ -191,8 +189,16 @@ export function ProjectManager() {
               {createMutation.isPending ? t("creating") : t("create")}
             </Button>
           </form>
+        </CardContent>
+      </Card>
 
-          <div className="border-border grid gap-4 border-y py-5 sm:grid-cols-[1fr_15rem]">
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">{t("tableTitle")}</CardTitle>
+          <CardDescription>{t("tableDescription")}</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="flex flex-wrap items-end justify-between gap-4">
             <ProjectSearchField
               key={filters.search}
               currentSearch={filters.search}
@@ -200,62 +206,48 @@ export function ProjectManager() {
               placeholder={t("searchPlaceholder")}
               onCommit={(search) => replaceFilters({ search, page: 1 })}
             />
-            <FormField htmlFor="project-sort" label={t("sortLabel")}>
-              <Select
-                value={filters.sort}
-                onValueChange={(value) =>
-                  replaceFilters({ sort: value as ProjectSort, page: 1 })
-                }
+            {page && page.total > 0 && (
+              <p
+                className="text-muted-foreground pb-2 text-sm"
+                aria-live="polite"
               >
-                <SelectTrigger id="project-sort">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="createdAt-desc">{t("newest")}</SelectItem>
-                  <SelectItem value="createdAt-asc">{t("oldest")}</SelectItem>
-                  <SelectItem value="name-asc">{t("nameAscending")}</SelectItem>
-                  <SelectItem value="name-desc">
-                    {t("nameDescending")}
-                  </SelectItem>
-                </SelectContent>
-              </Select>
-            </FormField>
+                {t("resultCount", { count: page.total })}
+              </p>
+            )}
           </div>
 
-          <div className="space-y-3" aria-busy={projects.isFetching}>
-            {projects.isPending && <LoadingState label={t("loading")} />}
-            {projects.isError && !projects.data && (
+          <div aria-busy={projects.isFetching} className="space-y-4">
+            {hasLoadError ? (
               <ErrorState
                 title={t("loadError")}
                 retryLabel={t("retry")}
                 onRetry={() => void projects.refetch()}
               />
-            )}
-            {page?.items.length === 0 && (
-              <EmptyState
-                title={filters.search ? t("noResults") : t("empty")}
-              />
-            )}
-            {page && page.total > 0 && (
-              <p className="text-muted-foreground text-sm" aria-live="polite">
-                {t("resultCount", { count: page.total })}
-              </p>
-            )}
-            {page?.items.map((project) => (
-              <ProjectCard
-                key={project.id}
-                project={project}
-                locale={locale}
-                editLabel={t("edit", { name: project.name })}
-                deleteLabel={t("delete", { name: project.name })}
-                isDeleting={
-                  deleteMutation.isPending &&
-                  deleteMutation.variables === project.id
+            ) : (
+              <ProjectTable
+                deletingProjectId={
+                  deleteMutation.isPending
+                    ? (deleteMutation.variables ?? null)
+                    : null
                 }
+                emptyState={
+                  <EmptyState
+                    className="border-0"
+                    title={filters.search ? t("noResults") : t("empty")}
+                  />
+                }
+                isFetching={projects.isFetching}
+                isLoading={projects.isPending}
+                locale={locale}
+                onDelete={setDeletingProject}
                 onEdit={setEditingProject}
-                onDelete={() => setDeletingProject(project)}
+                onSortChange={changeSort}
+                pageSize={filters.pageSize}
+                projects={page?.items ?? []}
+                sort={filters.sort}
               />
-            ))}
+            )}
+
             {page && page.totalPages > 1 && (
               <Pagination
                 currentPage={page.page}
@@ -310,7 +302,7 @@ export function ProjectManager() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </>
+    </div>
   );
 }
 
@@ -344,7 +336,7 @@ function ProjectSearchField({
         <Input
           id="project-search"
           type="search"
-          className="pl-9"
+          className="w-full pl-9 sm:w-80"
           value={value}
           placeholder={placeholder}
           onChange={(event) => setValue(event.target.value)}

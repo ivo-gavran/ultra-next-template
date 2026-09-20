@@ -1,11 +1,17 @@
 "use client";
 
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  queryOptions,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from "@tanstack/react-query";
 
 import {
   createProject,
   deleteProject,
   getProjects,
+  getProjectsSummary,
   updateProject,
 } from "@/features/projects/api";
 import type {
@@ -19,7 +25,10 @@ import {
 
 const projectQueryFactory = createEntityQueryFactory("projects");
 
-export const projectKeys = projectQueryFactory.keys;
+export const projectKeys = {
+  ...projectQueryFactory.keys,
+  summary: () => [...projectQueryFactory.keys.all, "summary"] as const,
+};
 
 export const projectQueries = {
   keys: projectKeys,
@@ -29,10 +38,21 @@ export const projectQueries = {
         (await getProjects(filters, { signal })).data,
       meta: { suppressErrorToast: true },
     }),
+  summary: () =>
+    queryOptions({
+      queryKey: projectKeys.summary(),
+      queryFn: async ({ signal }) =>
+        (await getProjectsSummary({ signal })).data,
+      meta: { suppressErrorToast: true },
+    }),
 };
 
 export function useProjects(filters: ProjectListFilters) {
   return useQuery(projectQueries.list(filters));
+}
+
+export function useProjectsSummary() {
+  return useQuery(projectQueries.summary());
 }
 
 export function useCreateProject() {
@@ -40,7 +60,7 @@ export function useCreateProject() {
   return useMutation({
     mutationFn: createProject,
     onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: projectKeys.lists() });
+      await queryClient.invalidateQueries({ queryKey: projectKeys.all });
     },
   });
 }
@@ -73,7 +93,7 @@ export function useUpdateProject(filters: ProjectListFilters) {
       optimisticUpdate?.rollback();
     },
     onSettled: async () => {
-      await queryClient.invalidateQueries({ queryKey: projectKeys.lists() });
+      await queryClient.invalidateQueries({ queryKey: projectKeys.all });
     },
   });
 }
@@ -98,7 +118,7 @@ export function useDeleteProject(filters: ProjectListFilters) {
       optimisticUpdate?.rollback();
     },
     onSettled: async () => {
-      await queryClient.invalidateQueries({ queryKey: projectKeys.lists() });
+      await queryClient.invalidateQueries({ queryKey: projectKeys.all });
     },
   });
 }

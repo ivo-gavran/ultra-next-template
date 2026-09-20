@@ -18,4 +18,11 @@ describe("projectQueries", () => {
       suppressErrorToast: true,
     });
   });
+
+  it("keeps the summary query under the shared project cache", () => {
+    expect(projectQueries.summary().queryKey).toEqual(projectKeys.summary());
+    expect(projectQueries.summary().meta).toEqual({
+      suppressErrorToast: true,
+    });
+  });
 });
