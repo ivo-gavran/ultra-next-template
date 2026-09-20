@@ -73,11 +73,10 @@ src/
 ├── components/
 │   ├── icons/           # Generated SVG React components
 │   ├── layout/          # Application shell and controls
-│   ├── projects/        # Example feature UI
 │   ├── providers/       # Query, theme, toast and mock providers
 │   └── ui/              # Reusable UI primitives
 ├── config/              # App identity and public environment config
-├── features/            # Feature schemas, API functions and query hooks
+├── features/            # Colocated feature UI, schemas and data operations
 ├── i18n/                # Locale routing and request configuration
 ├── lib/                 # API, auth, query, error and reporting utilities
 └── mocks/               # Development API handlers
@@ -88,7 +87,7 @@ docs/                    # Integration guides
 e2e/                     # Browser and visual tests
 ```
 
-Features own their schemas and data operations. Reusable UI stays independent, and backend-specific decisions remain outside the starter.
+Features own their UI, schemas and data operations. Reusable UI stays independent, and backend-specific decisions remain outside the starter.
 
 ## Connecting a real API
 
@@ -109,7 +108,7 @@ The shared API client expects these response envelopes:
 { error: { code: string; message: string; details?: unknown } }
 ```
 
-Each feature keeps its Zod schemas, API functions and TanStack Query definitions together. Update the schema, API function and MSW handler together when a contract changes.
+Each feature keeps its UI, Zod schemas, API functions and TanStack Query definitions together. Update the schema, API function and MSW handler together when a contract changes.
 
 Authentication hooks are provider-neutral and support bearer tokens, cookie sessions and a single shared refresh request. See [the authentication guide](docs/authentication.md) before connecting an auth provider.
 

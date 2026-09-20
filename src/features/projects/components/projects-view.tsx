@@ -7,9 +7,6 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 
-import { ProjectDashboard } from "@/components/projects/project-dashboard";
-import { ProjectEditDialog } from "@/components/projects/project-edit-dialog";
-import { ProjectTable } from "@/components/projects/project-table";
 import {
   AlertDialog,
   AlertDialogCancel,
@@ -33,6 +30,9 @@ import { Input } from "@/components/ui/input";
 import { Pagination } from "@/components/ui/pagination";
 import { Spinner } from "@/components/ui/spinner";
 import { Textarea } from "@/components/ui/textarea";
+import { ProjectDashboard } from "@/features/projects/components/project-dashboard";
+import { ProjectEditDialog } from "@/features/projects/components/project-edit-dialog";
+import { ProjectTable } from "@/features/projects/components/project-table";
 import {
   readProjectListFilters,
   writeProjectListFilters,
@@ -53,7 +53,7 @@ import {
 } from "@/features/projects/schemas";
 import { useValidationErrorMap } from "@/lib/validation/use-validation-error-map";
 
-export function ProjectManager() {
+export function ProjectsView() {
   const locale = useLocale();
   const t = useTranslations("Projects");
   const router = useRouter();
