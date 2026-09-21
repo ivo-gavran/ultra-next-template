@@ -1,10 +1,18 @@
 "use client";
 
 import { CircleAlertIcon, FolderOpenIcon, RotateCcwIcon } from "lucide-react";
+import { cn } from "cn";
 
 import { Button } from "@/components/ui/button";
+import {
+  Empty,
+  EmptyContent,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from "@/components/ui/empty";
 import { Spinner } from "@/components/ui/spinner";
-import { cn } from "@/lib/utils";
 
 type StateContainerProps = {
   className?: string;
@@ -20,16 +28,16 @@ export function LoadingState({
   label: string;
 }) {
   return (
-    <div
+    <Empty
       role="status"
       className={cn(
-        "text-muted-foreground flex items-center justify-center gap-2 rounded-xl border border-dashed p-8 text-sm",
+        "text-muted-foreground min-h-24 flex-row gap-2 border",
         className,
       )}
     >
       <Spinner aria-hidden="true" role="presentation" />
       {label}
-    </div>
+    </Empty>
   );
 }
 
@@ -39,22 +47,15 @@ export function EmptyState({
   title,
 }: StateContainerProps) {
   return (
-    <div
-      className={cn(
-        "border-border flex flex-col items-center rounded-xl border border-dashed p-8 text-center",
-        className,
-      )}
-    >
-      <span className="bg-muted text-muted-foreground mb-3 grid size-10 place-items-center rounded-full">
-        <FolderOpenIcon aria-hidden="true" className="size-5" />
-      </span>
-      <p className="text-sm font-medium">{title}</p>
-      {description && (
-        <p className="text-muted-foreground mt-1 max-w-sm text-sm">
-          {description}
-        </p>
-      )}
-    </div>
+    <Empty className={cn("border", className)}>
+      <EmptyHeader>
+        <EmptyMedia variant="icon">
+          <FolderOpenIcon aria-hidden="true" />
+        </EmptyMedia>
+        <EmptyTitle>{title}</EmptyTitle>
+        {description && <EmptyDescription>{description}</EmptyDescription>}
+      </EmptyHeader>
+    </Empty>
   );
 }
 
@@ -69,34 +70,28 @@ export function ErrorState({
   retryLabel?: string;
 }) {
   return (
-    <div
+    <Empty
       role="alert"
-      className={cn(
-        "border-destructive/30 bg-destructive/5 flex flex-col items-center rounded-xl border p-8 text-center",
-        className,
-      )}
+      className={cn("border-destructive/30 bg-destructive/5 border", className)}
     >
-      <span className="bg-destructive/10 text-destructive mb-3 grid size-10 place-items-center rounded-full">
-        <CircleAlertIcon aria-hidden="true" className="size-5" />
-      </span>
-      <p className="text-sm font-medium">{title}</p>
-      {description && (
-        <p className="text-muted-foreground mt-1 max-w-sm text-sm">
-          {description}
-        </p>
-      )}
-      {onRetry && retryLabel && (
-        <Button
-          type="button"
-          variant="outline"
-          size="sm"
-          className="mt-4"
-          onClick={onRetry}
+      <EmptyHeader>
+        <EmptyMedia
+          variant="icon"
+          className="bg-destructive/10 text-destructive"
         >
-          <RotateCcwIcon aria-hidden="true" />
-          {retryLabel}
-        </Button>
+          <CircleAlertIcon aria-hidden="true" />
+        </EmptyMedia>
+        <EmptyTitle>{title}</EmptyTitle>
+        {description && <EmptyDescription>{description}</EmptyDescription>}
+      </EmptyHeader>
+      {onRetry && retryLabel && (
+        <EmptyContent>
+          <Button type="button" variant="outline" size="sm" onClick={onRetry}>
+            <RotateCcwIcon aria-hidden="true" />
+            {retryLabel}
+          </Button>
+        </EmptyContent>
       )}
-    </div>
+    </Empty>
   );
 }

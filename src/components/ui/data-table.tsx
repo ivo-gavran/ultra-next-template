@@ -21,7 +21,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { cn } from "@/lib/utils";
+import { cn } from "cn";
 
 type DataTableColumnMeta = {
   /** Horizontal alignment applied to the header and every body cell. */

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { getLocale } from "next-intl/server";
+import { ThemeProvider } from "next-themes";
 
 import { WebVitals } from "@/components/providers/web-vitals";
 import { siteConfig } from "@/config/site";
@@ -32,7 +33,9 @@ export default async function RootLayout({
     <html lang={locale} data-scroll-behavior="smooth" suppressHydrationWarning>
       <body className="bg-background text-foreground min-h-screen font-sans antialiased">
         <WebVitals />
-        {children}
+        <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+          {children}
+        </ThemeProvider>
       </body>
     </html>
   );
