@@ -20,7 +20,25 @@ test("redirects the root route to the default locale", async ({ page }) => {
 });
 
 test("switches locale without losing the current route", async ({ page }) => {
+  const scriptRenderErrors: string[] = [];
+  page.on("console", (message) => {
+    if (
+      message.type() === "error" &&
+      message.text().includes("Encountered a script tag while rendering")
+    ) {
+      scriptRenderErrors.push(message.text());
+    }
+  });
+
   await page.goto("/en/projects");
+  await expect(
+    page.getByRole("heading", {
+      level: 1,
+      name: "Typed data, predictable UI.",
+    }),
+  ).toBeVisible();
+  expect(scriptRenderErrors).toEqual([]);
+
   await page.getByRole("button", { name: "BS", exact: true }).click();
 
   await expect(page).toHaveURL(/\/bs\/projects$/);
@@ -30,6 +48,7 @@ test("switches locale without losing the current route", async ({ page }) => {
       name: "Tipizovani podaci, predvidiv UI.",
     }),
   ).toBeVisible();
+  expect(scriptRenderErrors).toEqual([]);
 });
 
 test("renders a localized not-found page", async ({ page }) => {

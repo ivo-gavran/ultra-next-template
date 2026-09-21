@@ -1,6 +1,11 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 
-import { FormField } from "@/components/ui/form-field";
+import {
+  Field,
+  FieldDescription,
+  FieldError,
+  FieldLabel,
+} from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -14,20 +19,22 @@ import { Textarea } from "@/components/ui/textarea";
 function FormControlsPreview() {
   return (
     <div className="grid max-w-xl gap-5">
-      <FormField htmlFor="story-name" label="Project name">
+      <Field>
+        <FieldLabel htmlFor="story-name">Project name</FieldLabel>
         <Input id="story-name" defaultValue="Launch customer portal" />
-      </FormField>
-      <FormField
-        htmlFor="story-description"
-        label="Description"
-        description="Keep the summary concise and useful."
-      >
+      </Field>
+      <Field>
+        <FieldLabel htmlFor="story-description">Description</FieldLabel>
         <Textarea
           id="story-description"
           defaultValue="A reusable product workflow built on the typed API boundary."
         />
-      </FormField>
-      <FormField htmlFor="story-sort" label="Sort projects">
+        <FieldDescription>
+          Keep the summary concise and useful.
+        </FieldDescription>
+      </Field>
+      <Field>
+        <FieldLabel htmlFor="story-sort">Sort projects</FieldLabel>
         <Select defaultValue="newest">
           <SelectTrigger id="story-sort">
             <SelectValue />
@@ -37,7 +44,7 @@ function FormControlsPreview() {
             <SelectItem value="oldest">Oldest first</SelectItem>
           </SelectContent>
         </Select>
-      </FormField>
+      </Field>
     </div>
   );
 }
@@ -57,18 +64,18 @@ export const Default: Story = {};
 export const ValidationError: Story = {
   render: () => (
     <div className="max-w-xl">
-      <FormField
-        htmlFor="story-invalid-name"
-        label="Project name"
-        error="Project name must contain at least 2 characters."
-      >
+      <Field data-invalid>
+        <FieldLabel htmlFor="story-invalid-name">Project name</FieldLabel>
         <Input
           id="story-invalid-name"
           defaultValue="A"
           aria-invalid="true"
           aria-describedby="story-invalid-name-error"
         />
-      </FormField>
+        <FieldError id="story-invalid-name-error">
+          Project name must contain at least 2 characters.
+        </FieldError>
+      </Field>
     </div>
   ),
 };

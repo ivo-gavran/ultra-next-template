@@ -2,17 +2,17 @@ import { cleanup, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-import { Pagination } from "@/components/ui/pagination";
+import { ProjectsPagination } from "@/features/projects/components/projects-pagination";
 
 afterEach(cleanup);
 
-describe("Pagination", () => {
+describe("ProjectsPagination", () => {
   it("announces its state and requests adjacent pages", async () => {
     const user = userEvent.setup();
     const onPageChange = vi.fn();
 
     render(
-      <Pagination
+      <ProjectsPagination
         currentPage={2}
         totalPages={3}
         label="Projects pagination"
@@ -40,7 +40,7 @@ describe("Pagination", () => {
 
   it("disables navigation at the range boundaries", () => {
     const { rerender } = render(
-      <Pagination
+      <ProjectsPagination
         currentPage={1}
         totalPages={2}
         label="Pagination"
@@ -54,7 +54,7 @@ describe("Pagination", () => {
     expect(screen.getByRole("button", { name: "Previous" })).toBeDisabled();
 
     rerender(
-      <Pagination
+      <ProjectsPagination
         currentPage={2}
         totalPages={2}
         label="Pagination"

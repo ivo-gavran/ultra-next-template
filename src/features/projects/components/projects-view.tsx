@@ -25,13 +25,13 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { FormField } from "@/components/ui/form-field";
+import { Field, FieldError, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
-import { Pagination } from "@/components/ui/pagination";
 import { Spinner } from "@/components/ui/spinner";
 import { Textarea } from "@/components/ui/textarea";
 import { ProjectDashboard } from "@/features/projects/components/project-dashboard";
 import { ProjectEditDialog } from "@/features/projects/components/project-edit-dialog";
+import { ProjectsPagination } from "@/features/projects/components/projects-pagination";
 import { ProjectTable } from "@/features/projects/components/project-table";
 import {
   readProjectListFilters,
@@ -148,11 +148,8 @@ export function ProjectsView() {
             className="grid gap-4 sm:grid-cols-[1fr_1.5fr_auto] sm:items-start"
             onSubmit={onSubmit}
           >
-            <FormField
-              htmlFor="project-name"
-              label={t("name")}
-              error={errors.name?.message}
-            >
+            <Field data-invalid={Boolean(errors.name)}>
+              <FieldLabel htmlFor="project-name">{t("name")}</FieldLabel>
               <Input
                 id="project-name"
                 placeholder={t("namePlaceholder")}
@@ -162,12 +159,14 @@ export function ProjectsView() {
                 }
                 {...register("name")}
               />
-            </FormField>
-            <FormField
-              htmlFor="project-description"
-              label={t("descriptionLabel")}
-              error={errors.description?.message}
-            >
+              <FieldError id="project-name-error">
+                {errors.name?.message}
+              </FieldError>
+            </Field>
+            <Field data-invalid={Boolean(errors.description)}>
+              <FieldLabel htmlFor="project-description">
+                {t("descriptionLabel")}
+              </FieldLabel>
               <Textarea
                 id="project-description"
                 className="min-h-9"
@@ -179,7 +178,10 @@ export function ProjectsView() {
                 }
                 {...register("description")}
               />
-            </FormField>
+              <FieldError id="project-description-error">
+                {errors.description?.message}
+              </FieldError>
+            </Field>
             <Button
               type="submit"
               className="sm:mt-7"
@@ -249,7 +251,7 @@ export function ProjectsView() {
             )}
 
             {page && page.totalPages > 1 && (
-              <Pagination
+              <ProjectsPagination
                 currentPage={page.page}
                 totalPages={page.totalPages}
                 label={t("paginationLabel")}
@@ -285,11 +287,7 @@ export function ProjectsView() {
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel asChild>
-              <Button type="button" variant="outline">
-                {t("cancel")}
-              </Button>
-            </AlertDialogCancel>
+            <AlertDialogCancel>{t("cancel")}</AlertDialogCancel>
             <Button
               type="button"
               variant="destructive"
@@ -330,7 +328,8 @@ function ProjectSearchField({
   }, [currentSearch, onCommit, value]);
 
   return (
-    <FormField htmlFor="project-search" label={label}>
+    <Field>
+      <FieldLabel htmlFor="project-search">{label}</FieldLabel>
       <div className="relative">
         <Search className="text-muted-foreground pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2" />
         <Input
@@ -342,6 +341,6 @@ function ProjectSearchField({
           onChange={(event) => setValue(event.target.value)}
         />
       </div>
-    </FormField>
+    </Field>
   );
 }
