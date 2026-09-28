@@ -67,4 +67,22 @@ describe("ProjectsPagination", () => {
 
     expect(screen.getByRole("button", { name: "Next" })).toBeDisabled();
   });
+
+  it("disables both controls while the next page is loading", () => {
+    render(
+      <ProjectsPagination
+        currentPage={2}
+        totalPages={3}
+        disabled
+        label="Pagination"
+        previousLabel="Previous"
+        nextLabel="Next"
+        pageLabel="Page 2 of 3"
+        onPageChange={vi.fn()}
+      />,
+    );
+
+    expect(screen.getByRole("button", { name: "Previous" })).toBeDisabled();
+    expect(screen.getByRole("button", { name: "Next" })).toBeDisabled();
+  });
 });

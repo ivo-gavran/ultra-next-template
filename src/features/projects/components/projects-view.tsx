@@ -240,6 +240,7 @@ export function ProjectsView() {
                 }
                 isFetching={projects.isFetching}
                 isLoading={projects.isPending}
+                isPageTransition={projects.isPlaceholderData}
                 locale={locale}
                 onDelete={setDeletingProject}
                 onEdit={setEditingProject}
@@ -256,6 +257,7 @@ export function ProjectsView() {
                 totalPages={page.totalPages}
                 label={t("paginationLabel")}
                 previousLabel={t("previous")}
+                disabled={projects.isPlaceholderData}
                 nextLabel={t("next")}
                 pageLabel={t("page", {
                   current: String(page.page),
