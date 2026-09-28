@@ -114,23 +114,24 @@ Authentication hooks are provider-neutral and support bearer tokens, cookie sess
 
 ## Common commands
 
-| Command                   | Purpose                                         |
-| ------------------------- | ----------------------------------------------- |
-| `pnpm setup`              | Personalize the starter and create `.env.local` |
-| `pnpm dev`                | Start the development server                    |
-| `pnpm build`              | Create a production build                       |
-| `pnpm lint`               | Run ESLint                                      |
-| `pnpm typecheck`          | Generate types and run TypeScript checks        |
-| `pnpm test`               | Run unit tests                                  |
-| `pnpm test:coverage`      | Run unit tests with coverage gates              |
-| `pnpm test:e2e`           | Run Playwright browser tests                    |
-| `pnpm test:e2e:a11y`      | Run accessibility checks                        |
-| `pnpm test:visual:docker` | Compare canonical visual snapshots              |
-| `pnpm storybook`          | Start Storybook on port 6006                    |
-| `pnpm performance:check`  | Run the production Lighthouse checks            |
-| `pnpm analyze`            | Open the Next.js bundle analyzer                |
-| `pnpm icons:generate`     | Generate typed components from `assets/icons`   |
-| `pnpm format`             | Format the repository                           |
+| Command                    | Purpose                                             |
+| -------------------------- | --------------------------------------------------- |
+| `pnpm setup`               | Personalize the starter and create `.env.local`     |
+| `pnpm dev`                 | Start the development server                        |
+| `pnpm build`               | Create a production build                           |
+| `pnpm lint`                | Run ESLint                                          |
+| `pnpm typecheck`           | Generate types and run TypeScript checks            |
+| `pnpm test`                | Run unit tests                                      |
+| `pnpm test:coverage`       | Run unit tests with coverage gates                  |
+| `pnpm test:e2e`            | Run Playwright browser tests                        |
+| `pnpm test:e2e:production` | Build and smoke-test the production app without MSW |
+| `pnpm test:e2e:a11y`       | Run accessibility checks                            |
+| `pnpm test:visual:docker`  | Compare canonical visual snapshots                  |
+| `pnpm storybook`           | Start Storybook on port 6006                        |
+| `pnpm performance:check`   | Run the production Lighthouse checks                |
+| `pnpm analyze`             | Open the Next.js bundle analyzer                    |
+| `pnpm icons:generate`      | Generate typed components from `assets/icons`       |
+| `pnpm format`              | Format the repository                               |
 
 Install Playwright's browser once before running E2E tests locally:
 
@@ -147,9 +148,19 @@ pnpm exec playwright install chromium
 - API behavior: adapt `src/lib/api/client.ts` if your backend uses a different response contract.
 - Monitoring: connect your providers in `src/instrumentation.ts` and `src/instrumentation-client.ts`.
 
+Feature queries use TanStack's `queryOptions` directly with shared query keys. Keep API calls and cache invalidation in the feature; introduce additional abstractions only when multiple features need them.
+
+### Removing the Projects demo
+
+Replace the home page in `src/app/[locale]/page.tsx`, then remove `src/app/[locale]/projects` and `src/features/projects`. Remove the Projects navigation link from `src/components/layout/site-header.tsx` and its entry in `publicRoutes` in `src/config/site.ts`. Update both translation files and the route assertions in `src/app/metadata-routes.test.ts` and `e2e/` to match your new routes, along with the URLs in `.lighthouserc.cjs` and the feature paths in `vitest.config.ts`.
+
+Replace the demo handlers in `src/mocks/handlers.ts` with your API's handlers, or remove `ApiMockProvider` from `AppProviders` and remove `src/mocks` if you no longer need browser mocks. Set `NEXT_PUBLIC_API_MOCKING=disabled` when connecting your backend. Keep the shared UI, API client and query utilities for your own features.
+
 ## CI and deployment
 
 GitHub Actions verifies formatting, linting, types, generated icons, unit coverage, Storybook, production builds, E2E tests, accessibility, visual snapshots, performance budgets and dependency security.
+
+The production smoke suite builds and starts the app on port 3150 with MSW disabled. It checks server-rendered content without JavaScript, hydration, API data loading, locale navigation and metadata. Playwright supplies deterministic external API responses for the data-loading test; it does not require a running backend. Run build-based suites sequentially because they share `.next` output.
 
 For production, set these variables in the build environment:
 

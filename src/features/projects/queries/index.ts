@@ -18,22 +18,20 @@ import type {
   ProjectListFilters,
   ProjectsPage,
 } from "@/features/projects/schemas";
-import {
-  createEntityQueryFactory,
-  optimisticallyUpdateQuery,
-} from "@/lib/query";
+import { createEntityQueryKeys, optimisticallyUpdateQuery } from "@/lib/query";
 
-const projectQueryFactory = createEntityQueryFactory("projects");
+const keys = createEntityQueryKeys("projects");
 
 export const projectKeys = {
-  ...projectQueryFactory.keys,
-  summary: () => [...projectQueryFactory.keys.all, "summary"] as const,
+  ...keys,
+  summary: () => [...keys.all, "summary"] as const,
 };
 
 export const projectQueries = {
   keys: projectKeys,
   list: (filters: ProjectListFilters) =>
-    projectQueryFactory.list(filters, {
+    queryOptions({
+      queryKey: projectKeys.list(filters),
       queryFn: async ({ signal }) =>
         (await getProjects(filters, { signal })).data,
       meta: { suppressErrorToast: true },
