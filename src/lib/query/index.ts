@@ -1,5 +1,4 @@
 export { createQueryClient } from "@/lib/query/client";
-export { createEntityQueryFactory } from "@/lib/query/factory";
 export {
   createEntityQueryKeys,
   type EntityId,

@@ -18,9 +18,10 @@ export default defineConfig({
       reporter: ["text", "html"],
       reportOnFailure: true,
       include: [
-        "src/components/ui/{async-state,button,data-table,pagination,toast}.tsx",
+        "src/components/ui/{async-state,button,data-table,sonner}/index.tsx",
+        "src/components/ui/pagination.tsx",
         "src/config/{security-headers,site}.ts",
-        "src/features/projects/{filters,queries}.ts",
+        "src/features/projects/{filters,queries}/index.ts",
         "src/lib/api/client.ts",
         "src/lib/auth/adapter.ts",
         "src/lib/errors/{app-error,messages,reporting}.ts",
