@@ -1,11 +1,21 @@
 import {
+  Accessibility,
+  Activity,
   ArrowRight,
   Braces,
   Check,
+  FilePenLine,
   Gauge,
+  KeyRound,
   Languages,
   Layers3,
+  LayoutDashboard,
+  ListChecks,
+  ListFilter,
   Palette,
+  RefreshCw,
+  Search,
+  Server,
   ShieldCheck,
 } from "lucide-react";
 import type { Metadata } from "next";
@@ -65,32 +75,104 @@ export default async function HomePage({
     t("highlightLocalized"),
   ];
 
-  const features = [
-    { icon: Braces, title: t("apiTitle"), description: t("apiDescription") },
+  const featureGroups = [
     {
-      icon: Layers3,
-      title: t("clientTitle"),
-      description: t("clientDescription"),
+      title: t("uiGroupTitle"),
+      features: [
+        {
+          icon: Palette,
+          title: t("designTitle"),
+          description: t("designDescription"),
+        },
+        {
+          icon: Languages,
+          title: t("i18nTitle"),
+          description: t("i18nDescription"),
+        },
+        {
+          icon: ListChecks,
+          title: t("formsTitle"),
+          description: t("formsDescription"),
+        },
+        {
+          icon: Accessibility,
+          title: t("accessibilityTitle"),
+          description: t("accessibilityDescription"),
+        },
+      ],
     },
     {
-      icon: ShieldCheck,
-      title: t("qualityTitle"),
-      description: t("qualityDescription"),
+      title: t("dataGroupTitle"),
+      features: [
+        {
+          icon: Braces,
+          title: t("apiTitle"),
+          description: t("apiDescription"),
+        },
+        {
+          icon: KeyRound,
+          title: t("authTitle"),
+          description: t("authDescription"),
+        },
+        {
+          icon: Layers3,
+          title: t("clientTitle"),
+          description: t("clientDescription"),
+        },
+        {
+          icon: Server,
+          title: t("mocksTitle"),
+          description: t("mocksDescription"),
+        },
+      ],
     },
     {
-      icon: Languages,
-      title: t("i18nTitle"),
-      description: t("i18nDescription"),
+      title: t("deliveryGroupTitle"),
+      features: [
+        {
+          icon: Search,
+          title: t("metadataTitle"),
+          description: t("metadataDescription"),
+        },
+        {
+          icon: Activity,
+          title: t("observabilityTitle"),
+          description: t("observabilityDescription"),
+        },
+        {
+          icon: Gauge,
+          title: t("performanceTitle"),
+          description: t("performanceDescription"),
+        },
+        {
+          icon: ShieldCheck,
+          title: t("qualityTitle"),
+          description: t("qualityDescription"),
+        },
+      ],
+    },
+  ];
+
+  const demoPoints = [
+    {
+      icon: LayoutDashboard,
+      title: t("demoOverviewTitle"),
+      description: t("demoOverviewDescription"),
     },
     {
-      icon: Palette,
-      title: t("designTitle"),
-      description: t("designDescription"),
+      icon: FilePenLine,
+      title: t("demoFormsTitle"),
+      description: t("demoFormsDescription"),
     },
     {
-      icon: Gauge,
-      title: t("performanceTitle"),
-      description: t("performanceDescription"),
+      icon: ListFilter,
+      title: t("demoBrowseTitle"),
+      description: t("demoBrowseDescription"),
+    },
+    {
+      icon: RefreshCw,
+      title: t("demoMutationsTitle"),
+      description: t("demoMutationsDescription"),
     },
   ];
 
@@ -209,29 +291,85 @@ export default async function HomePage({
           </p>
         </div>
 
-        <ul className="bg-border mt-12 grid gap-px overflow-hidden rounded-2xl border sm:grid-cols-2 lg:grid-cols-3">
-          {features.map(({ icon: Icon, title, description }, index) => (
-            <li
-              key={title}
-              className="group bg-card hover:bg-accent/40 relative flex flex-col p-7 transition-colors"
-            >
-              <div className="flex items-center justify-between">
-                <span className="bg-primary/10 text-primary group-hover:bg-primary group-hover:text-primary-foreground grid size-10 place-items-center rounded-xl transition-colors">
-                  <Icon className="size-5" aria-hidden="true" />
+        <div className="mt-14 space-y-14">
+          {featureGroups.map((group, groupIndex) => (
+            <div key={group.title}>
+              <div className="border-border mb-6 flex items-center gap-4 border-b pb-4">
+                <span className="text-primary font-mono text-xs font-semibold tabular-nums">
+                  {String(groupIndex + 1).padStart(2, "0")}
                 </span>
-                <span className="text-muted-foreground font-mono text-xs tabular-nums">
-                  {String(index + 1).padStart(2, "0")}
-                </span>
+                <h3 className="text-xl font-semibold tracking-tight">
+                  {group.title}
+                </h3>
               </div>
-              <h3 className="mt-6 text-lg font-semibold tracking-tight">
-                {title}
-              </h3>
-              <p className="text-muted-foreground mt-2 leading-7">
-                {description}
-              </p>
-            </li>
+              <ul className="bg-border grid gap-px overflow-hidden rounded-2xl border sm:grid-cols-2 xl:grid-cols-4">
+                {group.features.map(({ icon: Icon, title, description }) => (
+                  <li
+                    key={title}
+                    className="group bg-card hover:bg-accent/40 relative flex flex-col p-6 transition-colors"
+                  >
+                    <span className="bg-primary/10 text-primary group-hover:bg-primary group-hover:text-primary-foreground grid size-10 place-items-center rounded-xl transition-colors">
+                      <Icon className="size-5" aria-hidden="true" />
+                    </span>
+                    <h4 className="mt-6 text-base font-semibold tracking-tight">
+                      {title}
+                    </h4>
+                    <p className="text-muted-foreground mt-2 text-sm leading-6">
+                      {description}
+                    </p>
+                  </li>
+                ))}
+              </ul>
+            </div>
           ))}
-        </ul>
+        </div>
+      </section>
+
+      {/* Reference feature */}
+      <section className="border-border/70 border-t">
+        <div className="mx-auto grid max-w-6xl gap-12 px-5 py-24 sm:py-28 lg:grid-cols-[0.8fr_1.2fr] lg:gap-20">
+          <div className="lg:sticky lg:top-28 lg:self-start">
+            <p className="text-primary text-sm font-semibold tracking-[0.18em] uppercase">
+              {t("demoEyebrow")}
+            </p>
+            <h2 className="mt-3 text-3xl font-semibold tracking-tight text-balance sm:text-4xl">
+              {t("demoTitle")}
+            </h2>
+            <p className="text-muted-foreground mt-4 text-lg leading-8 text-pretty">
+              {t("demoDescription")}
+            </p>
+            <Button asChild size="lg" className="mt-8">
+              <Link href="/projects">
+                {t("demoCta")}
+                <ArrowRight className="size-4" />
+              </Link>
+            </Button>
+            <p className="text-muted-foreground mt-5 text-sm leading-6">
+              {t("demoScope")}
+            </p>
+          </div>
+          <ol className="grid gap-4 sm:grid-cols-2">
+            {demoPoints.map(({ icon: Icon, title, description }, index) => (
+              <li
+                key={title}
+                className="bg-card rounded-2xl border p-6 shadow-xs"
+              >
+                <div className="flex items-center justify-between">
+                  <span className="bg-secondary text-secondary-foreground grid size-10 place-items-center rounded-xl">
+                    <Icon className="size-5" aria-hidden="true" />
+                  </span>
+                  <span className="text-muted-foreground font-mono text-xs tabular-nums">
+                    {String(index + 1).padStart(2, "0")}
+                  </span>
+                </div>
+                <h3 className="mt-6 font-semibold tracking-tight">{title}</h3>
+                <p className="text-muted-foreground mt-2 text-sm leading-6">
+                  {description}
+                </p>
+              </li>
+            ))}
+          </ol>
+        </div>
       </section>
 
       {/* Quick start */}

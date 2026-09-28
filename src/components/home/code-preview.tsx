@@ -65,7 +65,7 @@ export function CodePreview({ className }: { className?: string }) {
         <span className="size-2.5 rounded-full bg-[#febc2e]" />
         <span className="size-2.5 rounded-full bg-[#28c840]" />
         <span className="ml-3 truncate font-mono text-xs text-[#8b98ab]">
-          src/features/projects/api.ts
+          src/features/projects/api/index.ts
         </span>
         <span className="ml-auto rounded-md bg-white/6 px-2 py-0.5 font-mono text-[10px] tracking-wide text-[#8b98ab] uppercase">
           TypeScript
