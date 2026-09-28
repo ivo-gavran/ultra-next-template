@@ -20,7 +20,10 @@ import {
   useProjectsSummary,
   useUpdateProject,
 } from "@/features/projects/queries";
-import type { ProjectsPage } from "@/features/projects/schemas";
+import type {
+  ProjectListFilters,
+  ProjectsPage,
+} from "@/features/projects/schemas";
 
 vi.mock("@/features/projects/api", () => ({
   createProject: vi.fn(),
@@ -53,7 +56,10 @@ const cachedPage: ProjectsPage = {
 
 function setup() {
   const client = new QueryClient({
-    defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
+    defaultOptions: {
+      queries: { retry: false, staleTime: Infinity },
+      mutations: { retry: false },
+    },
   });
   client.setQueryData(projectKeys.list(filters), cachedPage);
   client.setQueryData(projectKeys.summary(), { total: 1 });
@@ -88,6 +94,55 @@ describe("projectQueries", () => {
 });
 
 describe("project query lifecycle", () => {
+  it("keeps the previous rows while only the page changes", async () => {
+    const { wrapper } = setup();
+    const nextPageFilters = { ...filters, page: 2 };
+    const pending =
+      Promise.withResolvers<Awaited<ReturnType<typeof getProjects>>>();
+    vi.mocked(getProjects).mockReturnValue(pending.promise);
+
+    const { result, rerender } = renderHook(
+      ({ queryFilters }: { queryFilters: ProjectListFilters }) =>
+        useProjects(queryFilters),
+      { wrapper, initialProps: { queryFilters: filters } },
+    );
+    rerender({ queryFilters: nextPageFilters });
+
+    await waitFor(() => expect(result.current.isPlaceholderData).toBe(true));
+    expect(result.current.data).toEqual(cachedPage);
+    expect(getProjects).toHaveBeenCalledWith(nextPageFilters, {
+      signal: expect.any(AbortSignal),
+    });
+
+    const nextPage = { ...cachedPage, page: 2, items: [] };
+    await act(async () => pending.resolve({ data: nextPage }));
+    await waitFor(() => expect(result.current.isPlaceholderData).toBe(false));
+    expect(result.current.data).toEqual(nextPage);
+  });
+
+  it.each([
+    ["search", { search: "observability" }],
+    ["sort", { sort: "name-asc" as const }],
+    ["page size", { pageSize: 10 }],
+  ])("does not reuse old rows when %s changes", async (_label, updates) => {
+    const { wrapper } = setup();
+    const pending =
+      Promise.withResolvers<Awaited<ReturnType<typeof getProjects>>>();
+    vi.mocked(getProjects).mockReturnValue(pending.promise);
+    const { result, rerender } = renderHook(
+      ({ queryFilters }: { queryFilters: ProjectListFilters }) =>
+        useProjects(queryFilters),
+      { wrapper, initialProps: { queryFilters: filters } },
+    );
+
+    rerender({ queryFilters: { ...filters, ...updates, page: 2 } });
+
+    await waitFor(() => expect(result.current.isPending).toBe(true));
+    expect(result.current.isPlaceholderData).toBe(false);
+    expect(result.current.data).toBeUndefined();
+    await act(async () => pending.resolve({ data: cachedPage }));
+  });
+
   it("loads the list and summary through their API contracts", async () => {
     const { client, wrapper } = setup();
     client.clear();

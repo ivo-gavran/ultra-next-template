@@ -11,6 +11,7 @@ import {
 
 type ProjectsPaginationProps = {
   currentPage: number;
+  disabled?: boolean;
   label: string;
   nextLabel: string;
   onPageChange: (page: number) => void;
@@ -21,6 +22,7 @@ type ProjectsPaginationProps = {
 
 export function ProjectsPagination({
   currentPage,
+  disabled = false,
   label,
   nextLabel,
   onPageChange,
@@ -28,8 +30,8 @@ export function ProjectsPagination({
   previousLabel,
   totalPages,
 }: ProjectsPaginationProps) {
-  const previousDisabled = currentPage <= 1;
-  const nextDisabled = currentPage >= totalPages;
+  const previousDisabled = disabled || currentPage <= 1;
+  const nextDisabled = disabled || currentPage >= totalPages;
 
   return (
     <Pagination aria-label={label}>

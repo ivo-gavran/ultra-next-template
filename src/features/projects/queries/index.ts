@@ -14,9 +14,10 @@ import {
   getProjectsSummary,
   updateProject,
 } from "@/features/projects/api";
-import type {
-  ProjectListFilters,
-  ProjectsPage,
+import {
+  projectListFiltersSchema,
+  type ProjectListFilters,
+  type ProjectsPage,
 } from "@/features/projects/schemas";
 import { createEntityQueryKeys, optimisticallyUpdateQuery } from "@/lib/query";
 
@@ -34,6 +35,28 @@ export const projectQueries = {
       queryKey: projectKeys.list(filters),
       queryFn: async ({ signal }) =>
         (await getProjects(filters, { signal })).data,
+      placeholderData: (previousData, previousQuery) => {
+        const previousKey = previousQuery?.queryKey;
+        if (
+          previousKey?.[0] !== projectKeys.all[0] ||
+          previousKey[1] !== "list"
+        ) {
+          return undefined;
+        }
+
+        const previousFilters = projectListFiltersSchema.safeParse(
+          previousKey[2],
+        );
+        if (!previousFilters.success) return undefined;
+
+        const previous = previousFilters.data;
+        return previous.search === filters.search &&
+          previous.sort === filters.sort &&
+          previous.pageSize === filters.pageSize &&
+          previous.page !== filters.page
+          ? previousData
+          : undefined;
+      },
       meta: { suppressErrorToast: true },
     }),
   summary: () =>

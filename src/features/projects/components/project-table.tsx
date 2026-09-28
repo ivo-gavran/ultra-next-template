@@ -28,6 +28,8 @@ type ProjectTableProps = {
   emptyState: ReactNode;
   isFetching: boolean;
   isLoading: boolean;
+  /** Previous page rows remain visible while the requested page loads. */
+  isPageTransition: boolean;
   locale: string;
   onDelete: (project: Project) => void;
   onEdit: (project: Project) => void;
@@ -45,6 +47,7 @@ export function ProjectTable({
   emptyState,
   isFetching,
   isLoading,
+  isPageTransition,
   locale,
   onDelete,
   onEdit,
@@ -172,7 +175,7 @@ export function ProjectTable({
                   variant="ghost"
                   size="icon-sm"
                   aria-label={t("rowActions", { name: project.name })}
-                  disabled={isDeleting}
+                  disabled={isDeleting || isPageTransition}
                 >
                   {isDeleting ? (
                     <Spinner />
@@ -199,7 +202,16 @@ export function ProjectTable({
         },
       }),
     ],
-    [dateFormatter, deletingProjectId, onDelete, onEdit, onSortChange, sort, t],
+    [
+      dateFormatter,
+      deletingProjectId,
+      isPageTransition,
+      onDelete,
+      onEdit,
+      onSortChange,
+      sort,
+      t,
+    ],
   );
 
   return (
