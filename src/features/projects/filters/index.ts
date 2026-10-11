@@ -1,38 +1,38 @@
-import {
-  projectListFiltersSchema,
-  type ProjectListFilters,
-} from "@/features/projects/schemas";
+import { createParser } from "nuqs/server";
+import type { z } from "zod";
 
-type SearchParamReader = Pick<URLSearchParams, "get">;
+import { projectListFiltersSchema } from "@/features/projects/schemas";
 
 export const defaultProjectListFilters = projectListFiltersSchema.parse({});
 
-export function readProjectListFilters(
-  searchParams: SearchParamReader,
-): ProjectListFilters {
-  const parsed = projectListFiltersSchema.safeParse({
-    search: searchParams.get("search") ?? undefined,
-    sort: searchParams.get("sort") ?? undefined,
-    page: searchParams.get("page") ?? undefined,
-    pageSize: searchParams.get("pageSize") ?? undefined,
-  });
-
-  return parsed.success ? parsed.data : defaultProjectListFilters;
-}
-
-export function writeProjectListFilters(
-  searchParams: URLSearchParams,
-  filters: ProjectListFilters,
+function createFilterParser<T extends string | number>(
+  schema: z.ZodType<T>,
+  defaultValue: T,
 ) {
-  const next = new URLSearchParams(searchParams);
-
-  for (const [key, value] of Object.entries(filters)) {
-    const defaultValue =
-      defaultProjectListFilters[key as keyof ProjectListFilters];
-
-    if (value === defaultValue || value === "") next.delete(key);
-    else next.set(key, String(value));
-  }
-
-  return next;
+  return createParser({
+    parse: (value) => {
+      const parsed = schema.safeParse(value);
+      return parsed.success ? parsed.data : null;
+    },
+    serialize: String,
+  }).withDefault(defaultValue);
 }
+
+export const projectListFilterParsers = {
+  search: createFilterParser(
+    projectListFiltersSchema.shape.search,
+    defaultProjectListFilters.search,
+  ),
+  sort: createFilterParser(
+    projectListFiltersSchema.shape.sort,
+    defaultProjectListFilters.sort,
+  ),
+  page: createFilterParser(
+    projectListFiltersSchema.shape.page,
+    defaultProjectListFilters.page,
+  ),
+  pageSize: createFilterParser(
+    projectListFiltersSchema.shape.pageSize,
+    defaultProjectListFilters.pageSize,
+  ),
+};

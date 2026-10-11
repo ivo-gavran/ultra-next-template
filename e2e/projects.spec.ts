@@ -51,7 +51,7 @@ test("completes the project lifecycle through the API contract", async ({
 });
 
 test("keeps project discovery state in the URL", async ({ page }) => {
-  await page.goto("/en/projects");
+  await page.goto("/en/projects?ref=docs");
 
   await page.getByLabel("Search projects").fill("observability");
   await expect(page).toHaveURL(/search=observability/);
@@ -81,6 +81,56 @@ test("keeps project discovery state in the URL", async ({ page }) => {
   await expect(
     page.getByRole("cell", { name: "Configure observability", exact: true }),
   ).toBeVisible();
+  await expect(page).toHaveURL(/ref=docs/);
+
+  await page.reload();
+  await expect(nameHeader).toHaveAttribute("aria-sort", "descending");
+  await expect(
+    page.getByRole("cell", { name: "Configure observability", exact: true }),
+  ).toBeVisible();
+  await expect(page).toHaveURL(/page=2/);
+  await expect(page).toHaveURL(/ref=docs/);
+});
+
+test("resets pagination when search or sort changes", async ({ page }) => {
+  await page.goto("/en/projects?page=2&ref=docs");
+  await expect(
+    page.getByRole("button", { name: "Previous", exact: true }),
+  ).toBeEnabled();
+
+  await page
+    .getByRole("columnheader", { name: "Name" })
+    .getByRole("button", { name: "Name" })
+    .click();
+  await expect(page).toHaveURL(/sort=name-asc/);
+  await expect(page).not.toHaveURL(/[?&]page=/);
+
+  await page.getByRole("button", { name: "Next", exact: true }).click();
+  await expect(page).toHaveURL(/page=2/);
+  await page.getByLabel("Search projects").fill("observability");
+  await expect(page).toHaveURL(/search=observability/);
+  await expect(page).not.toHaveURL(/[?&]page=/);
+  await expect(page).toHaveURL(/sort=name-asc/);
+  await expect(page).toHaveURL(/ref=docs/);
+  await expect(
+    page.getByRole("cell", { name: "Configure observability", exact: true }),
+  ).toBeVisible();
+});
+
+test("keeps valid URL filters when another parameter is invalid", async ({
+  page,
+}) => {
+  await page.goto(
+    "/en/projects?search=observability&sort=name-desc&page=-1&pageSize=51",
+  );
+  await expect(page.getByLabel("Search projects")).toHaveValue("observability");
+  await expect(
+    page.getByRole("columnheader", { name: "Name" }),
+  ).toHaveAttribute("aria-sort", "descending");
+  await expect(
+    page.getByRole("cell", { name: "Configure observability", exact: true }),
+  ).toBeVisible();
+  await expect(page.getByText("1 project", { exact: true })).toBeVisible();
 });
 
 test("summarizes the project collection above the table", async ({ page }) => {
