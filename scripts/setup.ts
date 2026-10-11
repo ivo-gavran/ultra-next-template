@@ -86,13 +86,15 @@ function readEnvValue(content: string, name: string): string | undefined {
 function setEnvValues(content: string, values: Record<string, string>): string {
   const pending = new Map(Object.entries(values));
   const lines = content.split(/\r?\n/).map((line) => {
-    for (const [name, value] of pending) {
-      if (line.startsWith(`${name}=`)) {
-        pending.delete(name);
-        return `${name}=${value}`;
-      }
-    }
-    return line;
+    const separator = line.indexOf("=");
+    if (separator < 0) return line;
+
+    const name = line.slice(0, separator);
+    const value = pending.get(name);
+    if (value === undefined) return line;
+
+    pending.delete(name);
+    return `${name}=${value}`;
   });
 
   if (pending.size > 0 && lines.at(-1) !== "") lines.push("");
@@ -166,16 +168,19 @@ export function parseSetupArgs(args: string[]): SetupArgs {
       continue;
     }
 
-    const [flag = "", inlineValue] = argument.split("=", 2);
+    const separator = argument.indexOf("=");
+    const flag = separator < 0 ? argument : argument.slice(0, separator);
+    const inlineValue =
+      separator < 0 ? undefined : argument.slice(separator + 1);
     const optionName = VALUE_FLAGS.get(flag);
     if (!optionName) throw new Error(`Unknown setup option: ${argument}`);
 
     const value = inlineValue ?? args[index + 1];
-    if (!value || (!inlineValue && value.startsWith("--"))) {
+    if (!value || (inlineValue === undefined && value.startsWith("--"))) {
       throw new Error(`Missing value for ${flag}`);
     }
     options[optionName] = value;
-    if (!inlineValue) index += 1;
+    if (inlineValue === undefined) index += 1;
   }
 
   return options;
@@ -349,24 +354,26 @@ Options:
 }
 
 async function main(): Promise<void> {
-  const args = parseSetupArgs(process.argv.slice(2));
-  if (args.help) {
+  const { dryRun, help, yes, ...overrides } = parseSetupArgs(
+    process.argv.slice(2),
+  );
+  if (help) {
     printHelp();
     return;
   }
 
   const root = process.cwd();
   const defaults = await readSetupDefaults(root);
-  const promptDefaults: SetupValues = { ...defaults, ...args };
-  if (args.name && !args.packageName) {
+  const promptDefaults: SetupValues = { ...defaults, ...overrides };
+  if (overrides.name && !overrides.packageName) {
     promptDefaults.packageName =
-      toPackageName(args.name) || defaults.packageName;
+      toPackageName(overrides.name) || defaults.packageName;
   }
-  const values: SetupValues = args.yes
-    ? { ...defaults, ...args }
-    : { ...(await promptForValues(promptDefaults)), ...args };
-  const result = await applySetup(root, values, { dryRun: args.dryRun });
-  const prefix = args.dryRun ? "Would update" : "Updated";
+  const values = yes
+    ? promptDefaults
+    : { ...(await promptForValues(promptDefaults)), ...overrides };
+  const result = await applySetup(root, values, { dryRun });
+  const prefix = dryRun ? "Would update" : "Updated";
 
   if (result.changed.length === 0) {
     console.log("Project already matches the requested setup.");
@@ -377,7 +384,7 @@ async function main(): Promise<void> {
   for (const path of result.changed) {
     console.log(`- ${path.replace(`${root}/`, "")}`);
   }
-  if (!args.dryRun) {
+  if (!dryRun) {
     console.log("\nRun pnpm install and pnpm typecheck to verify the project.");
   }
 }

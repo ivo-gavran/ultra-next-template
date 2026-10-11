@@ -18,19 +18,19 @@ type RequestContext = {
 
 export function getProjects(
   filters: ProjectListFilters,
-  { signal }: RequestContext = {},
+  context: RequestContext = {},
 ) {
   return apiClient.get("/projects", {
+    ...context,
     query: filters,
     schema: projectsResponseSchema,
-    ...(signal ? { signal } : {}),
   });
 }
 
-export function getProjectsSummary({ signal }: RequestContext = {}) {
+export function getProjectsSummary(context: RequestContext = {}) {
   return apiClient.get("/projects/summary", {
+    ...context,
     schema: projectsSummaryResponseSchema,
-    ...(signal ? { signal } : {}),
   });
 }
 

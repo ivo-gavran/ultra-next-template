@@ -47,6 +47,56 @@ const stack = [
   "Storybook",
 ];
 
+const highlights = [
+  "highlightTyped",
+  "highlightEnv",
+  "highlightMocked",
+  "highlightLocalized",
+] as const;
+
+const featureGroups = [
+  {
+    key: "ui",
+    features: [
+      { key: "design", icon: Palette },
+      { key: "i18n", icon: Languages },
+      { key: "forms", icon: ListChecks },
+      { key: "accessibility", icon: Accessibility },
+    ],
+  },
+  {
+    key: "data",
+    features: [
+      { key: "api", icon: Braces },
+      { key: "auth", icon: KeyRound },
+      { key: "client", icon: Layers3 },
+      { key: "mocks", icon: Server },
+    ],
+  },
+  {
+    key: "delivery",
+    features: [
+      { key: "metadata", icon: Search },
+      { key: "observability", icon: Activity },
+      { key: "performance", icon: Gauge },
+      { key: "quality", icon: ShieldCheck },
+    ],
+  },
+] as const;
+
+const demoPoints = [
+  { key: "demoOverview", icon: LayoutDashboard },
+  { key: "demoForms", icon: FilePenLine },
+  { key: "demoBrowse", icon: ListFilter },
+  { key: "demoMutations", icon: RefreshCw },
+] as const;
+
+const steps = [
+  { key: "stepInstall", command: "pnpm install" },
+  { key: "stepSetup", command: "pnpm run setup" },
+  { key: "stepDev", command: "pnpm dev" },
+] as const;
+
 export async function generateMetadata({
   params,
 }: {
@@ -71,132 +121,6 @@ export default async function HomePage({
   const locale = await getRouteLocale(params);
   setRequestLocale(locale);
   const t = await getTranslations("Home");
-
-  const highlights = [
-    t("highlightTyped"),
-    t("highlightEnv"),
-    t("highlightMocked"),
-    t("highlightLocalized"),
-  ];
-
-  const featureGroups = [
-    {
-      title: t("uiGroupTitle"),
-      features: [
-        {
-          icon: Palette,
-          title: t("designTitle"),
-          description: t("designDescription"),
-        },
-        {
-          icon: Languages,
-          title: t("i18nTitle"),
-          description: t("i18nDescription"),
-        },
-        {
-          icon: ListChecks,
-          title: t("formsTitle"),
-          description: t("formsDescription"),
-        },
-        {
-          icon: Accessibility,
-          title: t("accessibilityTitle"),
-          description: t("accessibilityDescription"),
-        },
-      ],
-    },
-    {
-      title: t("dataGroupTitle"),
-      features: [
-        {
-          icon: Braces,
-          title: t("apiTitle"),
-          description: t("apiDescription"),
-        },
-        {
-          icon: KeyRound,
-          title: t("authTitle"),
-          description: t("authDescription"),
-        },
-        {
-          icon: Layers3,
-          title: t("clientTitle"),
-          description: t("clientDescription"),
-        },
-        {
-          icon: Server,
-          title: t("mocksTitle"),
-          description: t("mocksDescription"),
-        },
-      ],
-    },
-    {
-      title: t("deliveryGroupTitle"),
-      features: [
-        {
-          icon: Search,
-          title: t("metadataTitle"),
-          description: t("metadataDescription"),
-        },
-        {
-          icon: Activity,
-          title: t("observabilityTitle"),
-          description: t("observabilityDescription"),
-        },
-        {
-          icon: Gauge,
-          title: t("performanceTitle"),
-          description: t("performanceDescription"),
-        },
-        {
-          icon: ShieldCheck,
-          title: t("qualityTitle"),
-          description: t("qualityDescription"),
-        },
-      ],
-    },
-  ];
-
-  const demoPoints = [
-    {
-      icon: LayoutDashboard,
-      title: t("demoOverviewTitle"),
-      description: t("demoOverviewDescription"),
-    },
-    {
-      icon: FilePenLine,
-      title: t("demoFormsTitle"),
-      description: t("demoFormsDescription"),
-    },
-    {
-      icon: ListFilter,
-      title: t("demoBrowseTitle"),
-      description: t("demoBrowseDescription"),
-    },
-    {
-      icon: RefreshCw,
-      title: t("demoMutationsTitle"),
-      description: t("demoMutationsDescription"),
-    },
-  ];
-
-  const steps = [
-    {
-      command: "pnpm install",
-      title: t("stepInstallTitle"),
-      description: t("stepInstallDescription"),
-    },
-    {
-      command: "pnpm run setup",
-      title: t("stepSetupTitle"),
-      description: t("stepSetupDescription"),
-    },
-    {
-      command: "pnpm dev",
-      title: t("stepDevTitle"),
-      description: t("stepDevDescription"),
-    },
-  ];
 
   return (
     <div className="relative overflow-hidden">
@@ -249,7 +173,7 @@ export default async function HomePage({
                   className="text-primary size-4 shrink-0"
                   aria-hidden="true"
                 />
-                {highlight}
+                {t(highlight)}
               </li>
             ))}
           </ul>
@@ -308,19 +232,19 @@ export default async function HomePage({
 
         <div className="mt-14 space-y-14">
           {featureGroups.map((group, groupIndex) => (
-            <div key={group.title}>
+            <div key={group.key}>
               <div className="border-border mb-6 flex items-center gap-4 border-b pb-4">
                 <span className="text-primary font-mono text-xs font-semibold tabular-nums">
                   {String(groupIndex + 1).padStart(2, "0")}
                 </span>
                 <h3 className="text-xl font-semibold tracking-tight">
-                  {group.title}
+                  {t(`${group.key}GroupTitle`)}
                 </h3>
               </div>
               <ul className="bg-border grid gap-px overflow-hidden rounded-2xl border sm:grid-cols-2 xl:grid-cols-4">
-                {group.features.map(({ icon: Icon, title, description }) => (
+                {group.features.map(({ icon: Icon, key }) => (
                   <li
-                    key={title}
+                    key={key}
                     className={`${styles.featureCard} group bg-card hover:bg-accent/40 relative flex flex-col p-6 transition-colors`}
                   >
                     <span
@@ -329,10 +253,10 @@ export default async function HomePage({
                       <Icon className="size-5" aria-hidden="true" />
                     </span>
                     <h4 className="mt-6 text-base font-semibold tracking-tight">
-                      {title}
+                      {t(`${key}Title`)}
                     </h4>
                     <p className="text-muted-foreground mt-2 text-sm leading-6">
-                      {description}
+                      {t(`${key}Description`)}
                     </p>
                   </li>
                 ))}
@@ -366,9 +290,9 @@ export default async function HomePage({
             </p>
           </div>
           <ol className="grid gap-4 sm:grid-cols-2">
-            {demoPoints.map(({ icon: Icon, title, description }, index) => (
+            {demoPoints.map(({ icon: Icon, key }, index) => (
               <li
-                key={title}
+                key={key}
                 className={`${styles.card} bg-card rounded-2xl border p-6 shadow-xs`}
               >
                 <div className="flex items-center justify-between">
@@ -379,9 +303,11 @@ export default async function HomePage({
                     {String(index + 1).padStart(2, "0")}
                   </span>
                 </div>
-                <h3 className="mt-6 font-semibold tracking-tight">{title}</h3>
+                <h3 className="mt-6 font-semibold tracking-tight">
+                  {t(`${key}Title`)}
+                </h3>
                 <p className="text-muted-foreground mt-2 text-sm leading-6">
-                  {description}
+                  {t(`${key}Description`)}
                 </p>
               </li>
             ))}
@@ -405,7 +331,7 @@ export default async function HomePage({
           </div>
 
           <ol className="mt-12 grid gap-6 md:grid-cols-3">
-            {steps.map(({ command, title, description }, index) => (
+            {steps.map(({ command, key }, index) => (
               <li
                 key={command}
                 className={`${styles.card} bg-card relative flex flex-col rounded-2xl border p-7 shadow-xs`}
@@ -414,10 +340,10 @@ export default async function HomePage({
                   {index + 1}
                 </span>
                 <h3 className="mt-5 text-lg font-semibold tracking-tight">
-                  {title}
+                  {t(`${key}Title`)}
                 </h3>
                 <p className="text-muted-foreground mt-2 flex-1 leading-7">
-                  {description}
+                  {t(`${key}Description`)}
                 </p>
                 <code className="bg-muted mt-6 block rounded-lg border px-4 py-3 font-mono text-sm">
                   <span aria-hidden="true" className="text-primary">

@@ -255,9 +255,8 @@ export function createApiClient({
       ...config
     }: ApiRequestOptions<TSchema, TBody> = {},
   ): Promise<ApiResponse<TSchema>> {
-    let response;
     try {
-      response = await instance.request<unknown>({
+      const response = await instance.request<unknown>({
         ...config,
         method,
         url: buildPath(path, pathParams),
@@ -266,28 +265,26 @@ export function createApiClient({
         skipAuth,
         skipAuthRefresh,
       } as InternalRequestConfig);
+
+      if (!schema) return undefined as ApiResponse<TSchema>;
+
+      const payload = response.data === "" ? undefined : response.data;
+      const parsed = schema.safeParse(payload);
+      if (!parsed.success) {
+        throw new AppError({
+          code: ErrorCode.InvalidResponse,
+          message: "The server returned an unexpected response.",
+          status: response.status,
+          details: parsed.error.flatten(),
+        });
+      }
+
+      return parsed.data as ApiResponse<TSchema>;
     } catch (error) {
       const appError = toAppError(error);
       reportApiError(appError, method, path);
       throw appError;
     }
-
-    const payload = response.data === "" ? undefined : response.data;
-    if (!schema) return undefined as ApiResponse<TSchema>;
-
-    const parsed = schema.safeParse(payload);
-    if (!parsed.success) {
-      const error = new AppError({
-        code: ErrorCode.InvalidResponse,
-        message: "The server returned an unexpected response.",
-        status: response.status,
-        details: parsed.error.flatten(),
-      });
-      reportApiError(error, method, path);
-      throw error;
-    }
-
-    return parsed.data as ApiResponse<TSchema>;
   }
 
   return {

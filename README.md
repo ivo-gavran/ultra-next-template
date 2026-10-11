@@ -4,45 +4,18 @@ A Next.js frontend starter with a working product example and the foundations ne
 
 The Projects demo runs against an in-browser mock API by default, so you can explore and change the app before connecting a backend. The starter does not ship a backend, database or authentication provider; its API and auth boundaries are designed for you to connect your own.
 
-## Features
+## What is included
 
-### Application and UI
+- Next.js App Router, React, strict TypeScript and Tailwind CSS.
+- Source-owned shadcn/ui components, light/dark themes, Lucide icons and Storybook.
+- English and Bosnian routes, typed translation keys and locale-aware navigation.
+- A typed Axios client with response validation, cancellation and provider-neutral authentication hooks.
+- TanStack Query for server state, nuqs for URL filters, and React Hook Form with Zod validation.
+- A Projects example with summary cards, create/edit/delete forms, search, sorting, pagination and optimistic updates.
+- Browser API mocks, localized metadata, error boundaries, error reporting and Web Vitals hooks.
+- Unit, browser, accessibility, visual and performance checks, plus CI and local Git hooks.
 
-- **Modern app foundation:** Next.js 16 App Router, React 19, strict TypeScript, Tailwind CSS v4 and responsive layouts.
-- **Editable component system:** source-owned shadcn/ui and Radix primitives, including buttons, forms, dialogs, menus, tables, pagination, skeletons, spinners and toast notifications. Storybook documents representative component states.
-- **Themes and icons:** light/dark theme toggle, Lucide icons and an SVGR pipeline that turns SVGs in `assets/icons` into typed React components.
-- **Localization:** English and Bosnian routes and messages with `next-intl`, a language switcher, locale-aware navigation and date/number formatting. English messages generate typed translation keys.
-- **Accessible states:** skip link, labelled controls, semantic tables and status regions, focus-aware dialogs, and reusable loading, empty, error and retry views. Storybook and Playwright include accessibility checks.
-
-### Data and integration
-
-- **Typed environment variables:** public variables are parsed with Zod in `src/config/public-env.ts`. Missing or malformed values fail fast with a clear error, and the rest of the app imports a typed `publicEnv` object instead of reading `process.env` directly.
-- **Typed REST client:** Axios methods for GET, POST, PUT, PATCH and DELETE; path/query parameters, request cancellation, Zod response validation and normalized application errors.
-- **Provider-neutral auth integration:** hooks for bearer tokens or cookie sessions, coordinated refresh for concurrent `401` responses, one retry per request and an unauthorized callback. Connect your own provider; see [the authentication guide](docs/authentication.md).
-- **Server state:** TanStack Query with shared query-key helpers, mutation invalidation, optimistic update/rollback helpers, global error reporting and localized error toasts. Query DevTools are available in development.
-- **URL state:** nuqs with typed, validated search parameters for shareable filters, sorting and pagination.
-- **Forms and tables:** React Hook Form with shared Zod input schemas and localized validation messages; a reusable TanStack Table component with sorting and loading/empty states.
-- **Backend-free development:** opt-in MSW browser handlers implement the Projects API contract, including CRUD, search, sorting, pagination and summary data. Mocking is enabled in the provided local environment example.
-
-### Delivery and quality
-
-- **Search and sharing metadata:** localized page titles/descriptions, canonical and alternate-language URLs, Open Graph/Twitter metadata, sitemap, robots rules and a web manifest.
-- **Resilience and observability:** route and global error boundaries, API/query/mutation/server error reporting hooks with sensitive metadata redaction, plus a pluggable Web Vitals reporter.
-- **Security defaults:** Content Security Policy and other response headers, public environment validation, dependency auditing and weekly Dependabot updates.
-- **Automated checks:** ESLint, Prettier, strict typechecking, Vitest unit tests with coverage thresholds, Playwright browser/production/accessibility/visual suites, Storybook accessibility checks and Lighthouse performance budgets.
-- **Repository workflow:** GitHub Actions runs quality, browser, visual and performance jobs; Lefthook runs local pre-commit checks and Conventional Commit message validation.
-
-### Projects reference feature
-
-The working Projects page shows how these pieces fit together:
-
-- Dashboard cards for total, recently created, recently updated and documented projects.
-- Create, edit and delete flows with validated forms, confirmation dialogs, pending feedback and localized error notifications.
-- Search, column sorting and page navigation stored in the URL, so filtered views can be shared or revisited.
-- Server-driven pagination, previous-page data during page changes, and optimistic edit/delete updates that roll back on failure.
-- Reusable table and loading, empty, error and retry states, with localized labels and dates.
-
-Its feature code lives together in `src/features/projects`: UI, schemas, API functions, URL filters and query definitions.
+The Projects feature lives in `src/features/projects`. Its API functions, filters, queries and schemas sit beside a `components` directory. Shared UI components keep tests and stories adjacent to the component file.
 
 ## Requirements
 
@@ -141,37 +114,28 @@ Authentication hooks are provider-neutral and support bearer tokens, cookie sess
 
 ## Common commands
 
-| Command                          | Purpose                                             |
-| -------------------------------- | --------------------------------------------------- |
-| `pnpm setup`                     | Personalize the starter and create `.env.local`     |
-| `pnpm dev`                       | Start the development server                        |
-| `pnpm build`                     | Create a production build                           |
-| `pnpm start`                     | Serve the production build                          |
-| `pnpm lint`                      | Run ESLint                                          |
-| `pnpm typegen`                   | Generate Next.js route types                        |
-| `pnpm typecheck`                 | Generate types and run TypeScript checks            |
-| `pnpm test`                      | Run unit tests                                      |
-| `pnpm test:watch`                | Run unit tests in watch mode                        |
-| `pnpm test:coverage`             | Run unit tests with coverage gates                  |
-| `pnpm test:e2e`                  | Run Playwright browser tests                        |
-| `pnpm test:e2e:production`       | Build and smoke-test the production app without MSW |
-| `pnpm test:e2e:a11y`             | Run accessibility checks                            |
-| `pnpm test:e2e:ui`               | Open the Playwright test UI                         |
-| `pnpm test:e2e:report`           | Open the saved Playwright report                    |
-| `pnpm test:visual`               | Run visual tests in a compatible Linux environment  |
-| `pnpm test:visual:update`        | Update snapshots in a compatible Linux environment  |
-| `pnpm test:visual:docker`        | Compare canonical visual snapshots                  |
-| `pnpm test:visual:update:docker` | Update canonical snapshots in Docker                |
-| `pnpm storybook`                 | Start Storybook on port 6006                        |
-| `pnpm build-storybook`           | Build the static Storybook                          |
-| `pnpm performance:check`         | Run the production Lighthouse checks                |
-| `pnpm analyze`                   | Open the Next.js bundle analyzer                    |
-| `pnpm analyze:output`            | Write bundle analysis output                        |
-| `pnpm icons:generate`            | Generate typed components from `assets/icons`       |
-| `pnpm icons:check`               | Check that generated icons match their SVG sources  |
-| `pnpm audit:dependencies`        | Audit production dependencies                       |
-| `pnpm format`                    | Format the repository                               |
-| `pnpm format:check`              | Check repository formatting                         |
+| Command                                    | Purpose                                         |
+| ------------------------------------------ | ----------------------------------------------- |
+| `pnpm setup`                               | Personalize the starter and create `.env.local` |
+| `pnpm dev`                                 | Start the development server                    |
+| `pnpm build` / `pnpm start`                | Build / serve the production app                |
+| `pnpm lint` / `pnpm typecheck`             | Check code and types                            |
+| `pnpm format` / `pnpm format:check`        | Format / check formatting                       |
+| `pnpm test` / `pnpm test:coverage`         | Run unit tests / coverage gates                 |
+| `pnpm test:e2e`                            | Run browser and accessibility tests             |
+| `pnpm test:e2e:production`                 | Build and test production with MSW disabled     |
+| `pnpm test:visual:docker`                  | Compare canonical visual snapshots              |
+| `pnpm test:visual:update:docker`           | Update canonical snapshots                      |
+| `pnpm storybook` / `pnpm build-storybook`  | Run / build Storybook                           |
+| `pnpm performance:check`                   | Build and run Lighthouse budgets                |
+| `pnpm icons:generate` / `pnpm icons:check` | Generate / verify SVG components                |
+| `pnpm audit:dependencies`                  | Audit production dependencies                   |
+
+Use `pnpm test:watch` for unit watch mode, `pnpm test:e2e:ui` for the browser test UI, and `pnpm test:e2e:report` for the saved report. Run only accessibility tests with `pnpm test:e2e:a11y`.
+
+`pnpm test:visual` and `pnpm test:visual:update` run visual checks directly in a compatible Linux environment. Docker provides that environment locally.
+
+Use `pnpm analyze` to open the bundle analyzer or `pnpm analyze:output` to save its output. All scripts are defined in `package.json`.
 
 Install Playwright's browser once before running E2E tests locally:
 
@@ -190,7 +154,7 @@ pnpm exec playwright install chromium
 
 Feature queries use TanStack's `queryOptions` directly with shared query keys. Keep API calls and cache invalidation in the feature; introduce additional abstractions only when multiple features need them.
 
-Use nuqs for state that belongs in a shareable URL. `AppProviders` supplies the Next.js App Router adapter, and the Projects example defines its parsers in `src/features/projects/filters` using the existing Zod field schemas. Invalid parameters fall back individually to their schema defaults. `useQueryStates` updates related filters together, preserves unrelated parameters and omits default values. Updates replace browser history without scrolling or triggering a server navigation; TanStack Query fetches the matching data. Search commits after 300 ms, and search/sort changes reset pagination. Keep temporary UI state, such as open dialogs, in React state.
+Use nuqs for shareable URL state and React state for temporary UI state such as open dialogs. The Projects filter parsers in `src/features/projects/filters.ts` reuse the Zod schemas. Invalid parameters fall back individually to defaults; unrelated parameters are preserved and default values are omitted. Search waits 300 ms before committing, and search/sort changes reset pagination. URL updates replace history without scrolling or server navigation; TanStack Query fetches the matching data.
 
 ### Removing the Projects demo
 

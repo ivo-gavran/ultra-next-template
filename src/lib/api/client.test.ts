@@ -1,3 +1,5 @@
+// @vitest-environment node
+
 import {
   afterAll,
   afterEach,
@@ -23,7 +25,7 @@ vi.mock("@/lib/errors/reporting", () => ({
 const baseURL = "https://api.example.test";
 const server = setupServer();
 
-beforeAll(() => server.listen({ onUnhandledRequest: "error" }));
+beforeAll(() => server.listen({ onUnhandledFrame: "error" }));
 afterEach(() => {
   server.resetHandlers();
   vi.clearAllMocks();

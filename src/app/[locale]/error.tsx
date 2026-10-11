@@ -5,13 +5,13 @@ import { useEffect } from "react";
 
 import { RouteStateShell } from "@/components/layout/route-state-shell";
 import { ErrorState } from "@/components/ui/async-state";
-import { reportAppError, type AppError } from "@/lib/errors/reporting";
+import { reportAppError, type BoundaryError } from "@/lib/errors/reporting";
 
 export default function LocaleError({
   error,
   retry,
 }: {
-  error: AppError;
+  error: BoundaryError;
   retry: () => void;
 }) {
   const t = useTranslations("Resilience");

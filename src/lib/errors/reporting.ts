@@ -9,7 +9,7 @@ const sensitiveKeyPattern =
 
 type Awaitable<T> = T | Promise<T>;
 
-export type AppError = Error & { digest?: string };
+export type BoundaryError = Error & { digest?: string };
 
 export type ErrorReportSource =
   | "api"
@@ -108,30 +108,10 @@ export function sanitizeReportMetadata(metadata: Record<string, unknown>) {
   return sanitizeValue(metadata, 0, new WeakSet()) as Record<string, unknown>;
 }
 
-function getStringProperty(value: unknown, property: string) {
-  if (
-    typeof value === "object" &&
-    value !== null &&
-    property in value &&
-    typeof value[property as keyof typeof value] === "string"
-  ) {
-    return value[property as keyof typeof value] as string;
-  }
-
-  return undefined;
-}
-
-function getNumberProperty(value: unknown, property: string) {
-  if (
-    typeof value === "object" &&
-    value !== null &&
-    property in value &&
-    typeof value[property as keyof typeof value] === "number"
-  ) {
-    return value[property as keyof typeof value] as number;
-  }
-
-  return undefined;
+function getProperty(value: unknown, property: string): unknown {
+  return typeof value === "object" && value !== null
+    ? (value as Record<string, unknown>)[property]
+    : undefined;
 }
 
 function createReportedError(error: unknown): ReportedError {
@@ -143,13 +123,13 @@ function createReportedError(error: unknown): ReportedError {
     error instanceof Error ? error.name : "NonErrorException";
   if (error instanceof Error && error.stack) reportedError.stack = error.stack;
 
-  const code = getStringProperty(error, "code");
-  const digest = getStringProperty(error, "digest");
-  const status = getNumberProperty(error, "status");
+  const code = getProperty(error, "code");
+  const digest = getProperty(error, "digest");
+  const status = getProperty(error, "status");
 
-  if (code) reportedError.code = code;
-  if (digest) reportedError.digest = digest;
-  if (status !== undefined) reportedError.status = status;
+  if (typeof code === "string" && code) reportedError.code = code;
+  if (typeof digest === "string" && digest) reportedError.digest = digest;
+  if (typeof status === "number") reportedError.status = status;
 
   return reportedError;
 }

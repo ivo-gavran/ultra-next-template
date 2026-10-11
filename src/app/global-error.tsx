@@ -5,7 +5,7 @@ import { useEffect } from "react";
 import { RouteStateShell } from "@/components/layout/route-state-shell";
 import { ErrorState } from "@/components/ui/async-state";
 import siteIdentity from "@/config/site-config.json";
-import { reportAppError, type AppError } from "@/lib/errors/reporting";
+import { reportAppError, type BoundaryError } from "@/lib/errors/reporting";
 
 import "./globals.css";
 
@@ -13,7 +13,7 @@ export default function GlobalError({
   error,
   retry,
 }: {
-  error: AppError;
+  error: BoundaryError;
   retry: () => void;
 }) {
   useEffect(() => {

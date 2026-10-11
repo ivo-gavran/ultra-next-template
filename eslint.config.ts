@@ -11,13 +11,15 @@ export default defineConfig([
       "@typescript-eslint/no-require-imports": "off",
     },
   },
-  // Override default ignores of eslint-config-next.
   globalIgnores([
-    // Default ignores of eslint-config-next:
     ".next/**",
     "out/**",
     "build/**",
     "coverage/**",
+    "test-results/**",
+    "playwright-report/**",
+    "blob-report/**",
+    ".lighthouseci/**",
     "public/mockServiceWorker.js",
     "storybook-static/**",
     "next-env.d.ts",
