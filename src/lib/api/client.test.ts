@@ -9,7 +9,8 @@ import {
   it,
   vi,
 } from "vitest";
-import { delay, HttpResponse, http } from "msw";
+import { HttpResponse, http } from "msw/http";
+import { delay } from "msw/utils/delay";
 import { setupServer } from "msw/node";
 import { z } from "zod";
 import { AxiosError, type AxiosAdapter } from "axios";
