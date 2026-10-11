@@ -35,6 +35,7 @@ const stack = [
   "Tailwind CSS",
   "shadcn/ui",
   "TanStack Query",
+  "nuqs",
   "Zod",
   "React Hook Form",
   "next-intl",

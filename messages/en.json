@@ -60,7 +60,7 @@
     "demoFormsTitle": "Validated forms",
     "demoFormsDescription": "Create and edit with shared schemas, localized errors and pending feedback.",
     "demoBrowseTitle": "Shareable views",
-    "demoBrowseDescription": "Search, sort and page through projects with filters stored in the URL.",
+    "demoBrowseDescription": "Search, sort and page through projects with typed URL state from nuqs.",
     "demoMutationsTitle": "Safe changes",
     "demoMutationsDescription": "Optimistic edits and deletes roll back if the request fails.",
     "workflowEyebrow": "Quick start",
