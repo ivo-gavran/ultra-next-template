@@ -19,6 +19,7 @@ The Projects demo runs against an in-browser mock API by default, so you can exp
 - **Typed REST client:** Axios methods for GET, POST, PUT, PATCH and DELETE; path/query parameters, request cancellation, Zod response validation and normalized application errors.
 - **Provider-neutral auth integration:** hooks for bearer tokens or cookie sessions, coordinated refresh for concurrent `401` responses, one retry per request and an unauthorized callback. Connect your own provider; see [the authentication guide](docs/authentication.md).
 - **Server state:** TanStack Query with shared query-key helpers, mutation invalidation, optimistic update/rollback helpers, global error reporting and localized error toasts. Query DevTools are available in development.
+- **URL state:** nuqs with typed, validated search parameters for shareable filters, sorting and pagination.
 - **Forms and tables:** React Hook Form with shared Zod input schemas and localized validation messages; a reusable TanStack Table component with sorting and loading/empty states.
 - **Backend-free development:** opt-in MSW browser handlers implement the Projects API contract, including CRUD, search, sorting, pagination and summary data. Mocking is enabled in the provided local environment example.
 
@@ -96,7 +97,7 @@ src/
 ├── components/
 │   ├── icons/           # Generated SVG React components
 │   ├── layout/          # Application shell and controls
-│   ├── providers/       # Query, theme, toast and mock providers
+│   ├── providers/       # Query, URL state, theme, toast and mock providers
 │   └── ui/              # Reusable UI primitives
 ├── config/              # App identity and public environment config
 ├── features/            # Colocated feature UI, schemas and data operations
@@ -185,6 +186,8 @@ pnpm exec playwright install chromium
 - Monitoring: connect your providers in `src/instrumentation.ts` and `src/instrumentation-client.ts`.
 
 Feature queries use TanStack's `queryOptions` directly with shared query keys. Keep API calls and cache invalidation in the feature; introduce additional abstractions only when multiple features need them.
+
+Use nuqs for state that belongs in a shareable URL. `AppProviders` supplies the Next.js App Router adapter, and the Projects example defines its parsers in `src/features/projects/filters` using the existing Zod field schemas. Invalid parameters fall back individually to their schema defaults. `useQueryStates` updates related filters together, preserves unrelated parameters and omits default values. Updates replace browser history without scrolling or triggering a server navigation; TanStack Query fetches the matching data. Search commits after 300 ms, and search/sort changes reset pagination. Keep temporary UI state, such as open dialogs, in React state.
 
 ### Removing the Projects demo
 

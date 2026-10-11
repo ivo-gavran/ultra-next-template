@@ -3,8 +3,8 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Plus, Search } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useQueryStates } from "nuqs";
+import { useCallback, useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 
 import {
@@ -33,10 +33,7 @@ import { ProjectDashboard } from "@/features/projects/components/project-dashboa
 import { ProjectEditDialog } from "@/features/projects/components/project-edit-dialog";
 import { ProjectsPagination } from "@/features/projects/components/projects-pagination";
 import { ProjectTable } from "@/features/projects/components/project-table";
-import {
-  readProjectListFilters,
-  writeProjectListFilters,
-} from "@/features/projects/filters";
+import { projectListFilterParsers } from "@/features/projects/filters";
 import {
   useCreateProject,
   useDeleteProject,
@@ -56,14 +53,12 @@ import { useValidationErrorMap } from "@/lib/validation/use-validation-error-map
 export function ProjectsView() {
   const locale = useLocale();
   const t = useTranslations("Projects");
-  const router = useRouter();
-  const pathname = usePathname();
-  const searchParams = useSearchParams();
-  const serializedSearchParams = searchParams.toString();
-  const filters = useMemo(
-    () => readProjectListFilters(new URLSearchParams(serializedSearchParams)),
-    [serializedSearchParams],
-  );
+  const [filters, setFilters] = useQueryStates(projectListFilterParsers, {
+    history: "replace",
+    shallow: true,
+    scroll: false,
+    clearOnDefault: true,
+  });
   const [editingProject, setEditingProject] = useState<Project | null>(null);
   const [deletingProject, setDeletingProject] = useState<Project | null>(null);
   const projects = useProjects(filters);
@@ -83,16 +78,9 @@ export function ProjectsView() {
 
   const replaceFilters = useCallback(
     (updates: Partial<ProjectListFilters>) => {
-      const nextSearchParams = writeProjectListFilters(
-        new URLSearchParams(serializedSearchParams),
-        { ...filters, ...updates },
-      );
-      const query = nextSearchParams.toString();
-      router.replace(query ? `${pathname}?${query}` : pathname, {
-        scroll: false,
-      });
+      void setFilters(updates);
     },
-    [filters, pathname, router, serializedSearchParams],
+    [setFilters],
   );
 
   const changeSort = useCallback(
@@ -357,6 +345,7 @@ function ProjectSearchField({
           type="search"
           className="h-9 w-full pl-9 sm:w-80"
           value={value}
+          maxLength={80}
           placeholder={placeholder}
           onChange={(event) => setValue(event.target.value)}
         />
