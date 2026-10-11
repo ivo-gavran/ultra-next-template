@@ -44,7 +44,7 @@ export function ProjectDashboard() {
 
   return (
     <section
-      className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4"
+      className="grid grid-cols-2 gap-3 sm:gap-4 xl:grid-cols-4"
       aria-busy={summary.isPending}
       aria-label={t("overviewTitle")}
     >
@@ -88,19 +88,25 @@ type SummaryStatProps = {
 
 function SummaryStat({ hint, icon: Icon, label, value }: SummaryStatProps) {
   return (
-    <Card className="gap-0 py-5">
-      <CardContent className="px-5">
+    <Card className="gap-0 py-4 sm:py-5">
+      <CardContent className="px-4 sm:px-5">
         {/* A description list ties each label to its value for screen readers. */}
         <dl>
-          <dt className="text-muted-foreground flex items-center gap-2 text-sm">
-            <Icon aria-hidden="true" className="size-4" />
+          <dt className="text-muted-foreground flex items-start gap-2 text-sm leading-5">
+            <span className="bg-primary/10 text-primary hidden size-5 shrink-0 place-items-center rounded-md sm:grid">
+              <Icon aria-hidden="true" className="size-3.5" />
+            </span>
             {label}
           </dt>
-          <dd className="mt-2 text-3xl font-semibold tabular-nums">
-            {value === undefined ? <Skeleton className="h-9 w-12" /> : value}
+          <dd className="mt-2 text-2xl font-semibold tracking-tight tabular-nums sm:text-3xl">
+            {value === undefined ? (
+              <Skeleton className="h-8 w-12 sm:h-9" />
+            ) : (
+              value
+            )}
           </dd>
         </dl>
-        <p className="text-muted-foreground mt-2 text-xs">{hint}</p>
+        <p className="text-muted-foreground mt-1.5 text-xs leading-4">{hint}</p>
       </CardContent>
     </Card>
   );
