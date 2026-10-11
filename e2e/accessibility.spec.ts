@@ -31,7 +31,11 @@ for (const route of auditedRoutes) {
   test(`${route.name} has no serious accessibility violations`, async ({
     page,
   }) => {
-    await page.emulateMedia({ colorScheme: route.colorScheme });
+    // Audit stable colors rather than intermediate entrance-animation opacity.
+    await page.emulateMedia({
+      colorScheme: route.colorScheme,
+      reducedMotion: "reduce",
+    });
     await page.goto(route.path);
     await expect(page.locator("main")).toBeVisible();
 
