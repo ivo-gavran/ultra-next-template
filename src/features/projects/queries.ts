@@ -29,7 +29,6 @@ export const projectKeys = {
 };
 
 export const projectQueries = {
-  keys: projectKeys,
   list: (filters: ProjectListFilters) =>
     queryOptions({
       queryKey: projectKeys.list(filters),

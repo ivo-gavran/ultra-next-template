@@ -1,4 +1,4 @@
-import { mkdtemp, readFile, writeFile } from "node:fs/promises";
+import { mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
@@ -61,7 +61,6 @@ async function createFixture() {
 }
 
 afterEach(async () => {
-  const { rm } = await import("node:fs/promises");
   await Promise.all(
     temporaryDirectories
       .splice(0)
@@ -79,6 +78,21 @@ describe("setup CLI", () => {
       yes: true,
     });
     expect(toPackageName("Čista Aplikacija")).toBe("cista-aplikacija");
+  });
+
+  it("preserves equals signs inside inline option values", () => {
+    expect(
+      parseSetupArgs([
+        "--api-url=https://api.example.test/v1?region=eu",
+        "--description-en=Build = ship",
+        "--name",
+        "Product",
+      ]),
+    ).toMatchObject({
+      apiUrl: "https://api.example.test/v1?region=eu",
+      descriptionEn: "Build = ship",
+      name: "Product",
+    });
   });
 
   it("rejects unsafe origins and unsupported locales", () => {

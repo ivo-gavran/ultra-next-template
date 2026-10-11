@@ -64,19 +64,25 @@ export function ProjectTable({
       }),
     [locale],
   );
+  const nameSortDirection =
+    sort === "name-asc"
+      ? "ascending"
+      : sort === "name-desc"
+        ? "descending"
+        : "none";
+  const createdSortDirection =
+    sort === "createdAt-asc"
+      ? "ascending"
+      : sort === "createdAt-desc"
+        ? "descending"
+        : "none";
 
   const columns = useMemo<DataTableColumns<Project>>(
     () => [
       columnHelper.accessor("name", {
         header: () => (
           <DataTableSortButton
-            direction={
-              sort === "name-asc"
-                ? "ascending"
-                : sort === "name-desc"
-                  ? "descending"
-                  : "none"
-            }
+            direction={nameSortDirection}
             label={t("columnName")}
             onToggle={() =>
               onSortChange(sort === "name-asc" ? "name-desc" : "name-asc")
@@ -86,12 +92,7 @@ export function ProjectTable({
         meta: {
           cellClassName:
             "w-full whitespace-normal md:w-auto md:whitespace-nowrap",
-          sortDirection:
-            sort === "name-asc"
-              ? "ascending"
-              : sort === "name-desc"
-                ? "descending"
-                : "none",
+          sortDirection: nameSortDirection,
         },
         cell: (info) => {
           const description = info.row.original.description;
@@ -136,13 +137,7 @@ export function ProjectTable({
       columnHelper.accessor("createdAt", {
         header: () => (
           <DataTableSortButton
-            direction={
-              sort === "createdAt-asc"
-                ? "ascending"
-                : sort === "createdAt-desc"
-                  ? "descending"
-                  : "none"
-            }
+            direction={createdSortDirection}
             label={t("columnCreated")}
             onToggle={() =>
               onSortChange(
@@ -152,12 +147,7 @@ export function ProjectTable({
           />
         ),
         meta: {
-          sortDirection:
-            sort === "createdAt-asc"
-              ? "ascending"
-              : sort === "createdAt-desc"
-                ? "descending"
-                : "none",
+          sortDirection: createdSortDirection,
         },
         cell: (info) => (
           <time
@@ -228,8 +218,10 @@ export function ProjectTable({
     ],
     [
       dateFormatter,
+      createdSortDirection,
       deletingProjectId,
       isPageTransition,
+      nameSortDirection,
       onDelete,
       onEdit,
       onSortChange,

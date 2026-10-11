@@ -7,6 +7,18 @@ import {
   type Project,
 } from "@/features/projects/schemas";
 import { getApiUrl } from "@/lib/api/client";
+import { ErrorCode } from "@/lib/errors/app-error";
+
+const projectsUrl = getApiUrl("/projects");
+
+function errorResponse(
+  code: ErrorCode,
+  message: string,
+  status: number,
+  details?: unknown,
+) {
+  return HttpResponse.json({ error: { code, message, details } }, { status });
+}
 
 const initialProjects: Project[] = [
   {
@@ -60,11 +72,11 @@ function buildProjectsSummary() {
 }
 
 export const handlers = [
-  http.get(`${getApiUrl("/projects")}/summary`, () =>
+  http.get(`${projectsUrl}/summary`, () =>
     HttpResponse.json({ data: buildProjectsSummary() }),
   ),
 
-  http.get(getApiUrl("/projects"), ({ request }) => {
+  http.get(projectsUrl, ({ request }) => {
     const url = new URL(request.url);
     const parsedFilters = projectListFiltersSchema.safeParse({
       search: url.searchParams.get("search") ?? undefined,
@@ -74,10 +86,7 @@ export const handlers = [
     });
 
     if (!parsedFilters.success) {
-      return HttpResponse.json(
-        { error: { code: "VALIDATION_ERROR", message: "Invalid filters." } },
-        { status: 400 },
-      );
+      return errorResponse(ErrorCode.Validation, "Invalid filters.", 400);
     }
 
     const { search, sort, page, pageSize } = parsedFilters.data;
@@ -87,13 +96,11 @@ export const handlers = [
         .toLocaleLowerCase()
         .includes(normalizedSearch),
     );
-    const sortedProjects = [...filteredProjects].sort((left, right) => {
-      if (sort === "name-asc") return left.name.localeCompare(right.name);
-      if (sort === "name-desc") return right.name.localeCompare(left.name);
-      if (sort === "createdAt-asc") {
-        return left.createdAt.localeCompare(right.createdAt);
-      }
-      return right.createdAt.localeCompare(left.createdAt);
+    const sortedProjects = filteredProjects.sort((left, right) => {
+      const comparison = sort.startsWith("name-")
+        ? left.name.localeCompare(right.name)
+        : left.createdAt.localeCompare(right.createdAt);
+      return sort.endsWith("-asc") ? comparison : -comparison;
     });
     const total = sortedProjects.length;
     const totalPages = Math.max(1, Math.ceil(total / pageSize));
@@ -111,19 +118,15 @@ export const handlers = [
     });
   }),
 
-  http.post(getApiUrl("/projects"), async ({ request }) => {
+  http.post(projectsUrl, async ({ request }) => {
     const parsed = createProjectSchema.safeParse(await request.json());
 
     if (!parsed.success) {
-      return HttpResponse.json(
-        {
-          error: {
-            code: "VALIDATION_ERROR",
-            message: "Check the submitted fields.",
-            details: parsed.error.flatten(),
-          },
-        },
-        { status: 400 },
+      return errorResponse(
+        ErrorCode.Validation,
+        "Check the submitted fields.",
+        400,
+        parsed.error.flatten(),
       );
     }
 
@@ -140,28 +143,21 @@ export const handlers = [
     return HttpResponse.json({ data: project }, { status: 201 });
   }),
 
-  http.patch(`${getApiUrl("/projects")}/:id`, async ({ params, request }) => {
+  http.patch(`${projectsUrl}/:id`, async ({ params, request }) => {
     const project = projects.find(({ id }) => id === params.id);
 
     if (!project) {
-      return HttpResponse.json(
-        { error: { code: "NOT_FOUND", message: "Project not found." } },
-        { status: 404 },
-      );
+      return errorResponse(ErrorCode.NotFound, "Project not found.", 404);
     }
 
     const parsed = updateProjectSchema.safeParse(await request.json());
 
     if (!parsed.success) {
-      return HttpResponse.json(
-        {
-          error: {
-            code: "VALIDATION_ERROR",
-            message: "Check the submitted fields.",
-            details: parsed.error.flatten(),
-          },
-        },
-        { status: 400 },
+      return errorResponse(
+        ErrorCode.Validation,
+        "Check the submitted fields.",
+        400,
+        parsed.error.flatten(),
       );
     }
 
@@ -178,19 +174,11 @@ export const handlers = [
     return HttpResponse.json({ data: updatedProject });
   }),
 
-  http.delete(`${getApiUrl("/projects")}/:id`, ({ params }) => {
+  http.delete(`${projectsUrl}/:id`, ({ params }) => {
     const project = projects.find(({ id }) => id === params.id);
 
     if (!project) {
-      return HttpResponse.json(
-        {
-          error: {
-            code: "NOT_FOUND",
-            message: "Project not found.",
-          },
-        },
-        { status: 404 },
-      );
+      return errorResponse(ErrorCode.NotFound, "Project not found.", 404);
     }
 
     projects = projects.filter(({ id }) => id !== project.id);

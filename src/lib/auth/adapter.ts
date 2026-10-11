@@ -13,27 +13,25 @@ export type AuthAdapter<TSession> = {
 export function createApiAuthHooks<TSession>(
   adapter: AuthAdapter<TSession>,
 ): ApiAuthHooks {
-  return {
-    ...(adapter.getAccessToken
-      ? {
-          getAccessToken: async () => {
-            const session = await adapter.getSession();
-            return session ? adapter.getAccessToken?.(session) : null;
-          },
-        }
-      : {}),
-    ...(adapter.refreshSession
-      ? {
-          refreshSession: async () => {
-            const session = await adapter.refreshSession?.();
-            if (!session) throw new Error("Authentication session expired");
-          },
-        }
-      : {}),
-    ...(adapter.onUnauthorized
-      ? {
-          onUnauthorized: (error: AppError) => adapter.onUnauthorized?.(error),
-        }
-      : {}),
-  };
+  const hooks: ApiAuthHooks = {};
+
+  if (adapter.getAccessToken) {
+    hooks.getAccessToken = async () => {
+      const session = await adapter.getSession();
+      return session ? adapter.getAccessToken?.(session) : null;
+    };
+  }
+
+  if (adapter.refreshSession) {
+    hooks.refreshSession = async () => {
+      const session = await adapter.refreshSession?.();
+      if (!session) throw new Error("Authentication session expired");
+    };
+  }
+
+  if (adapter.onUnauthorized) {
+    hooks.onUnauthorized = (error) => adapter.onUnauthorized?.(error);
+  }
+
+  return hooks;
 }

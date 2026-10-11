@@ -13,33 +13,26 @@ import {
 export function useValidationErrorMap() {
   const t = useTranslations("Validation");
 
-  const errorMap = useMemo(() => {
+  return useMemo(() => {
     const translate: ValidationTranslator = (
       key: ValidationTranslationKey,
       values?: ValidationTranslationValues,
     ) => {
-      if (key === "messages.invalid" || key === "messages.required") {
-        return t(key, { field: String(values?.field ?? "") });
-      }
+      const field = String(values?.field ?? "");
 
-      if (key === "messages.maxLength") {
-        return t(key, {
-          field: String(values?.field ?? ""),
-          max: Number(values?.max ?? 0),
-        });
+      switch (key) {
+        case "messages.invalid":
+        case "messages.required":
+          return t(key, { field });
+        case "messages.maxLength":
+          return t(key, { field, max: Number(values?.max ?? 0) });
+        case "messages.minLength":
+          return t(key, { field, min: Number(values?.min ?? 0) });
+        default:
+          return t(key);
       }
-
-      if (key === "messages.minLength") {
-        return t(key, {
-          field: String(values?.field ?? ""),
-          min: Number(values?.min ?? 0),
-        });
-      }
-
-      return t(key);
     };
+
     return createValidationErrorMap(translate);
   }, [t]);
-
-  return errorMap;
 }

@@ -11,7 +11,7 @@ import type { AppLocale } from "@/i18n/routing";
 import styles from "./switcher.module.css";
 
 export function LocaleSwitcher() {
-  const locale = useLocale() as AppLocale;
+  const locale = useLocale();
   const pathname = usePathname();
   const router = useRouter();
   const t = useTranslations("Nav");

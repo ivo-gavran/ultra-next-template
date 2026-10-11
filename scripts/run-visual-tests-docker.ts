@@ -1,15 +1,19 @@
 import { spawnSync } from "node:child_process";
 import { basename, resolve } from "node:path";
 
+import playwrightPackage from "@playwright/test/package.json" with { type: "json" };
+
+import packageJson from "../package.json" with { type: "json" };
+
 const root = resolve(process.cwd());
 const volumeName = `${basename(root).replace(/[^a-zA-Z0-9_.-]/g, "-")}-visual-node-modules`;
-const image = "mcr.microsoft.com/playwright:v1.63.0-noble";
+const image = `mcr.microsoft.com/playwright:v${playwrightPackage.version}-noble`;
 const visualCommand = process.argv.includes("--update")
   ? "pnpm test:visual:update"
   : "pnpm test:visual";
 const command = [
   "corepack enable",
-  "corepack prepare pnpm@11.19.0 --activate",
+  `corepack prepare ${packageJson.packageManager} --activate`,
   "pnpm install --frozen-lockfile",
   visualCommand,
 ].join(" && ");
