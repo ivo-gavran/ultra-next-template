@@ -10,6 +10,8 @@ import { AppProviders } from "@/components/providers/app-providers";
 import { getRouteLocale } from "@/i18n/params";
 import { routing } from "@/i18n/routing";
 
+import styles from "@/components/layout/switcher.module.css";
+
 export function generateStaticParams() {
   return routing.locales.map((locale) => ({ locale }));
 }
@@ -37,7 +39,11 @@ export default async function LocaleLayout({
         </a>
         <div className="flex min-h-screen flex-col">
           <SiteHeader />
-          <main id="main-content" tabIndex={-1} className="flex-1">
+          <main
+            id="main-content"
+            tabIndex={-1}
+            className={`${styles.localeContent} flex-1`}
+          >
             {children}
           </main>
         </div>

@@ -28,6 +28,8 @@ import { Link } from "@/i18n/navigation";
 import { getRouteLocale } from "@/i18n/params";
 import { createPageMetadata } from "@/lib/metadata";
 
+import styles from "./home.module.css";
+
 const stack = [
   "Next.js",
   "React",
@@ -202,7 +204,9 @@ export default async function HomePage({
 
       {/* Hero */}
       <section className="mx-auto grid max-w-6xl items-center gap-12 px-5 pt-16 pb-16 sm:pt-24 lg:grid-cols-[1.05fr_0.95fr] lg:gap-16 lg:pt-28 lg:pb-20">
-        <div className="flex min-w-0 flex-col items-start">
+        <div
+          className={`${styles.heroContent} flex min-w-0 flex-col items-start`}
+        >
           <p className="border-primary/25 bg-primary/10 text-primary inline-flex items-center gap-2 rounded-full border py-1.5 pr-4 pl-2.5 text-sm font-medium">
             <span className="relative flex size-2">
               <span className="bg-primary/60 absolute inline-flex size-full rounded-full motion-safe:animate-ping" />
@@ -217,7 +221,11 @@ export default async function HomePage({
             {t("description")}
           </p>
           <div className="mt-9 flex flex-col gap-3 sm:flex-row">
-            <Button asChild size="lg" className="h-11 px-6 text-base">
+            <Button
+              asChild
+              size="lg"
+              className={`${styles.cta} h-11 px-6 text-base`}
+            >
               <Link href="/projects">
                 {t("primaryCta")}
                 <ArrowRight className="size-4" />
@@ -227,7 +235,7 @@ export default async function HomePage({
               asChild
               size="lg"
               variant="outline"
-              className="h-11 px-6 text-base"
+              className={`${styles.cta} h-11 px-6 text-base`}
             >
               <a href="#stack">{t("secondaryCta")}</a>
             </Button>
@@ -249,7 +257,7 @@ export default async function HomePage({
 
         <figure
           aria-label={t("codePreviewLabel")}
-          className="relative w-full min-w-0 lg:justify-self-end"
+          className={`${styles.codePreview} relative w-full min-w-0 lg:justify-self-end`}
         >
           <div
             aria-hidden="true"
@@ -313,9 +321,11 @@ export default async function HomePage({
                 {group.features.map(({ icon: Icon, title, description }) => (
                   <li
                     key={title}
-                    className="group bg-card hover:bg-accent/40 relative flex flex-col p-6 transition-colors"
+                    className={`${styles.featureCard} group bg-card hover:bg-accent/40 relative flex flex-col p-6 transition-colors`}
                   >
-                    <span className="bg-primary/10 text-primary group-hover:bg-primary group-hover:text-primary-foreground grid size-10 place-items-center rounded-xl transition-colors">
+                    <span
+                      className={`${styles.featureIcon} bg-primary/10 text-primary group-hover:bg-primary group-hover:text-primary-foreground grid size-10 place-items-center rounded-xl transition-colors`}
+                    >
                       <Icon className="size-5" aria-hidden="true" />
                     </span>
                     <h4 className="mt-6 text-base font-semibold tracking-tight">
@@ -345,7 +355,7 @@ export default async function HomePage({
             <p className="text-muted-foreground mt-4 text-lg leading-8 text-pretty">
               {t("demoDescription")}
             </p>
-            <Button asChild size="lg" className="mt-8">
+            <Button asChild size="lg" className={`${styles.cta} mt-8`}>
               <Link href="/projects">
                 {t("demoCta")}
                 <ArrowRight className="size-4" />
@@ -359,7 +369,7 @@ export default async function HomePage({
             {demoPoints.map(({ icon: Icon, title, description }, index) => (
               <li
                 key={title}
-                className="bg-card rounded-2xl border p-6 shadow-xs"
+                className={`${styles.card} bg-card rounded-2xl border p-6 shadow-xs`}
               >
                 <div className="flex items-center justify-between">
                   <span className="bg-secondary text-secondary-foreground grid size-10 place-items-center rounded-xl">
@@ -398,7 +408,7 @@ export default async function HomePage({
             {steps.map(({ command, title, description }, index) => (
               <li
                 key={command}
-                className="bg-card relative flex flex-col rounded-2xl border p-7 shadow-xs"
+                className={`${styles.card} bg-card relative flex flex-col rounded-2xl border p-7 shadow-xs`}
               >
                 <span className="bg-primary text-primary-foreground grid size-8 place-items-center rounded-full text-sm font-semibold tabular-nums">
                   {index + 1}
@@ -441,7 +451,11 @@ export default async function HomePage({
                 {t("ctaDescription")}
               </p>
             </div>
-            <Button asChild size="lg" className="h-12 shrink-0 px-7 text-base">
+            <Button
+              asChild
+              size="lg"
+              className={`${styles.cta} h-12 shrink-0 px-7 text-base`}
+            >
               <Link href="/projects">
                 {t("ctaButton")}
                 <ArrowRight className="size-4" />

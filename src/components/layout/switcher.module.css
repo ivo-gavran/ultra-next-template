@@ -1,0 +1,78 @@
+.themeIcon {
+  position: relative;
+  display: block;
+  width: 1rem;
+  height: 1rem;
+}
+
+.sun,
+.moon {
+  position: absolute;
+  inset: 0;
+}
+
+.sun {
+  opacity: 0;
+  transform: rotate(-90deg) scale(0.6);
+}
+
+.moon {
+  opacity: 1;
+  transform: rotate(0) scale(1);
+}
+
+.themeIcon[data-dark="true"] .sun {
+  opacity: 1;
+  transform: rotate(0) scale(1);
+}
+
+.themeIcon[data-dark="true"] .moon {
+  opacity: 0;
+  transform: rotate(90deg) scale(0.6);
+}
+
+.localeLabel {
+  display: inline-block;
+  min-width: 2ch;
+}
+
+@keyframes locale-enter {
+  from {
+    opacity: 0.96;
+    transform: translateY(4px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes label-enter {
+  from {
+    opacity: 0;
+    transform: translateY(3px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .sun,
+  .moon {
+    transition:
+      transform 220ms ease-out,
+      opacity 220ms ease-out;
+  }
+
+  .localeContent {
+    animation: locale-enter 220ms ease-out backwards;
+  }
+
+  .localeLabel {
+    animation: label-enter 180ms ease-out backwards;
+  }
+}
