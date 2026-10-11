@@ -60,7 +60,7 @@
     "demoFormsTitle": "Validirane forme",
     "demoFormsDescription": "Kreiraj i uređuj uz zajedničke sheme, lokalizovane greške i prikaz radnje u toku.",
     "demoBrowseTitle": "Prikazi koje možeš podijeliti",
-    "demoBrowseDescription": "Pretražuj, sortiraj i listaj projekte uz filtere sačuvane u URL-u.",
+    "demoBrowseDescription": "Pretražuj, sortiraj i listaj projekte uz tipizovano URL stanje preko nuqs-a.",
     "demoMutationsTitle": "Sigurne izmjene",
     "demoMutationsDescription": "Optimistične izmjene i brisanja vraćaju prethodno stanje ako zahtjev ne uspije.",
     "workflowEyebrow": "Brzi start",
