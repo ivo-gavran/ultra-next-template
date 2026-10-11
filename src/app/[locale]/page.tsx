@@ -71,6 +71,7 @@ export default async function HomePage({
 
   const highlights = [
     t("highlightTyped"),
+    t("highlightEnv"),
     t("highlightMocked"),
     t("highlightLocalized"),
   ];
@@ -230,10 +231,15 @@ export default async function HomePage({
               <a href="#stack">{t("secondaryCta")}</a>
             </Button>
           </div>
-          <ul className="text-muted-foreground mt-10 flex flex-wrap gap-x-6 gap-y-3 text-sm">
+          {/* Two columns only while the hero spans the full width; beside the
+              code preview the column is too narrow for two unbroken lines. */}
+          <ul className="text-muted-foreground mt-10 grid justify-start gap-x-6 gap-y-3 text-sm sm:grid-cols-[auto_auto] lg:grid-cols-1">
             {highlights.map((highlight) => (
               <li key={highlight} className="flex items-center gap-2">
-                <Check className="text-primary size-4" aria-hidden="true" />
+                <Check
+                  className="text-primary size-4 shrink-0"
+                  aria-hidden="true"
+                />
                 {highlight}
               </li>
             ))}

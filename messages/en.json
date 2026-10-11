@@ -14,6 +14,7 @@
     "primaryCta": "Explore the API demo",
     "secondaryCta": "See what's inside",
     "highlightTyped": "Typed contracts from form to API",
+    "highlightEnv": "Typed, validated environment variables",
     "highlightMocked": "Working demo without a backend",
     "highlightLocalized": "English, Bosnian and adaptive themes",
     "codePreviewLabel": "Example of the typed API boundary",

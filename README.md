@@ -16,6 +16,7 @@ The Projects demo runs against an in-browser mock API by default, so you can exp
 
 ### Data and integration
 
+- **Typed environment variables:** public variables are parsed with Zod in `src/config/public-env.ts`. Missing or malformed values fail fast with a clear error, and the rest of the app imports a typed `publicEnv` object instead of reading `process.env` directly.
 - **Typed REST client:** Axios methods for GET, POST, PUT, PATCH and DELETE; path/query parameters, request cancellation, Zod response validation and normalized application errors.
 - **Provider-neutral auth integration:** hooks for bearer tokens or cookie sessions, coordinated refresh for concurrent `401` responses, one retry per request and an unauthorized callback. Connect your own provider; see [the authentication guide](docs/authentication.md).
 - **Server state:** TanStack Query with shared query-key helpers, mutation invalidation, optimistic update/rollback helpers, global error reporting and localized error toasts. Query DevTools are available in development.
@@ -87,6 +88,8 @@ NEXT_PUBLIC_API_MOCKING=enabled
 | `NEXT_PUBLIC_API_MOCKING` | Use `enabled` locally or `disabled` with a real API    |
 
 These values are public and embedded during `next build`. Never store secrets in `NEXT_PUBLIC_*` variables.
+
+Each variable is validated and typed by the Zod schema in `src/config/public-env.ts`. When you add a variable, add it to that schema and read it through `publicEnv`.
 
 ## Project structure
 

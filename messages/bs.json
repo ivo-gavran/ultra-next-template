@@ -14,6 +14,7 @@
     "primaryCta": "Istraži API demo",
     "secondaryCta": "Pogledaj šta je unutra",
     "highlightTyped": "Tipizovani ugovori od forme do API-ja",
+    "highlightEnv": "Tipizovane i validirane env varijable",
     "highlightMocked": "Demo koji radi bez backenda",
     "highlightLocalized": "Engleski, bosanski i prilagodljive teme",
     "codePreviewLabel": "Primjer tipizovane API granice",
