@@ -2,8 +2,8 @@ import { Atom } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 
 import { LocaleSwitcher } from "@/components/layout/locale-switcher";
+import { NavLink } from "@/components/layout/nav-link";
 import { ThemeToggle } from "@/components/layout/theme-toggle";
-import { Button } from "@/components/ui/button";
 import { siteConfig } from "@/config/site";
 import { Link } from "@/i18n/navigation";
 
@@ -27,17 +27,14 @@ export async function SiteHeader() {
           className="flex items-center gap-1"
           aria-label={t("mainNavigation")}
         >
-          <Button
-            asChild
-            variant="ghost"
-            size="sm"
-            className="hidden sm:inline-flex"
-          >
-            <Link href="/">{t("home")}</Link>
-          </Button>
-          <Button asChild variant="outline" size="sm">
-            <Link href="/projects">{t("projects")}</Link>
-          </Button>
+          <NavLink href="/" className="hidden sm:inline-flex">
+            {t("home")}
+          </NavLink>
+          <NavLink href="/projects">{t("projects")}</NavLink>
+          <span
+            aria-hidden="true"
+            className="bg-border mx-1.5 hidden h-5 w-px sm:block"
+          />
           <LocaleSwitcher />
           <ThemeToggle label={t("toggleTheme")} />
         </nav>

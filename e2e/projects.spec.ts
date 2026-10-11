@@ -64,17 +64,19 @@ test("keeps project discovery state in the URL", async ({ page }) => {
   await expect(page).not.toHaveURL(/search=/);
 
   const nameHeader = page.getByRole("columnheader", { name: "Name" });
+  // The name cell also holds a mobile-only description, so compare the
+  // accessible name, which skips content hidden at this viewport.
   const firstRowName = page.locator("tbody tr").first().locator("td").first();
 
   await nameHeader.getByRole("button", { name: "Name" }).click();
   await expect(page).toHaveURL(/sort=name-asc/);
   await expect(nameHeader).toHaveAttribute("aria-sort", "ascending");
-  await expect(firstRowName).toHaveText("Configure observability");
+  await expect(firstRowName).toHaveAccessibleName("Configure observability");
 
   await nameHeader.getByRole("button", { name: "Name" }).click();
   await expect(page).toHaveURL(/sort=name-desc/);
   await expect(nameHeader).toHaveAttribute("aria-sort", "descending");
-  await expect(firstRowName).toHaveText("Review accessibility");
+  await expect(firstRowName).toHaveAccessibleName("Review accessibility");
 
   await page.getByRole("button", { name: "Next", exact: true }).click();
   await expect(page).toHaveURL(/page=2/);

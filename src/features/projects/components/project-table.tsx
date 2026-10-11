@@ -84,6 +84,8 @@ export function ProjectTable({
           />
         ),
         meta: {
+          cellClassName:
+            "w-full whitespace-normal md:w-auto md:whitespace-nowrap",
           sortDirection:
             sort === "name-asc"
               ? "ascending"
@@ -91,13 +93,31 @@ export function ProjectTable({
                 ? "descending"
                 : "none",
         },
-        cell: (info) => (
-          <span className="text-foreground font-medium">{info.getValue()}</span>
-        ),
+        cell: (info) => {
+          const description = info.row.original.description;
+
+          return (
+            <div className="min-w-0">
+              <span className="text-foreground font-medium">
+                {info.getValue()}
+              </span>
+              {/* The description column is hidden on narrow screens, so the
+                  text moves under the name instead of being squeezed. */}
+              {description ? (
+                <p className="text-muted-foreground mt-0.5 line-clamp-2 text-xs leading-5 md:hidden">
+                  {description}
+                </p>
+              ) : null}
+            </div>
+          );
+        },
       }),
       columnHelper.accessor("description", {
         header: () => t("columnDescription"),
-        meta: { cellClassName: "max-w-[28rem] whitespace-normal" },
+        meta: {
+          cellClassName: "hidden max-w-[28rem] whitespace-normal md:table-cell",
+          headerClassName: "hidden md:table-cell",
+        },
         cell: (info) => {
           const description = info.getValue();
 
@@ -150,6 +170,10 @@ export function ProjectTable({
       }),
       columnHelper.accessor("updatedAt", {
         header: () => t("columnUpdated"),
+        meta: {
+          cellClassName: "hidden lg:table-cell",
+          headerClassName: "hidden lg:table-cell",
+        },
         cell: (info) => (
           <time
             className="text-muted-foreground tabular-nums"

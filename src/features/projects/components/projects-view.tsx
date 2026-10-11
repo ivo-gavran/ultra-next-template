@@ -1,7 +1,7 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Search } from "lucide-react";
+import { Plus, Search } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
@@ -152,6 +152,7 @@ export function ProjectsView() {
               <FieldLabel htmlFor="project-name">{t("name")}</FieldLabel>
               <Input
                 id="project-name"
+                className="h-9"
                 placeholder={t("namePlaceholder")}
                 aria-invalid={Boolean(errors.name)}
                 aria-describedby={
@@ -169,7 +170,7 @@ export function ProjectsView() {
               </FieldLabel>
               <Textarea
                 id="project-description"
-                className="min-h-9"
+                className="min-h-9 py-[7px] leading-5"
                 rows={1}
                 placeholder={t("descriptionPlaceholder")}
                 aria-invalid={Boolean(errors.description)}
@@ -182,14 +183,28 @@ export function ProjectsView() {
                 {errors.description?.message}
               </FieldError>
             </Field>
-            <Button
-              type="submit"
-              className="sm:mt-7"
-              disabled={createMutation.isPending}
-            >
-              {createMutation.isPending && <Spinner />}
-              {createMutation.isPending ? t("creating") : t("create")}
-            </Button>
+            {/* An invisible label line keeps the button level with the inputs,
+                even when a validation message grows a field below it. */}
+            <div className="flex flex-col gap-2">
+              <span
+                aria-hidden="true"
+                className="hidden text-sm leading-snug font-medium select-none sm:block"
+              >
+                &nbsp;
+              </span>
+              <Button
+                type="submit"
+                className="h-9 px-4"
+                disabled={createMutation.isPending}
+              >
+                {createMutation.isPending ? (
+                  <Spinner />
+                ) : (
+                  <Plus aria-hidden="true" />
+                )}
+                {createMutation.isPending ? t("creating") : t("create")}
+              </Button>
+            </div>
           </form>
         </CardContent>
       </Card>
@@ -330,14 +345,17 @@ function ProjectSearchField({
   }, [currentSearch, onCommit, value]);
 
   return (
-    <Field>
+    <Field className="sm:w-auto">
       <FieldLabel htmlFor="project-search">{label}</FieldLabel>
       <div className="relative">
-        <Search className="text-muted-foreground pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2" />
+        <Search
+          aria-hidden="true"
+          className="text-muted-foreground pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2"
+        />
         <Input
           id="project-search"
           type="search"
-          className="w-full pl-9 sm:w-80"
+          className="h-9 w-full pl-9 sm:w-80"
           value={value}
           placeholder={placeholder}
           onChange={(event) => setValue(event.target.value)}

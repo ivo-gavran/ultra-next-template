@@ -110,7 +110,7 @@ function DataTable<TData extends RowData>({
                     key={header.id}
                     aria-sort={meta?.sortDirection}
                     className={cn(
-                      "h-11 px-4",
+                      "h-11 px-3 sm:px-4",
                       meta?.align === "end" && "text-right",
                       meta?.headerClassName,
                     )}
@@ -136,10 +136,15 @@ function DataTable<TData extends RowData>({
           {isLoading &&
             Array.from({ length: skeletonRows }, (_row, rowIndex) => (
               <TableRow key={`skeleton-${rowIndex}`}>
-                {columns.map((_column, columnIndex) => (
+                {columns.map((column, columnIndex) => (
                   <TableCell
                     key={`skeleton-cell-${columnIndex}`}
-                    className="px-4 py-3"
+                    // Reuse the column classes so responsive visibility matches
+                    // the header while placeholders are shown.
+                    className={cn(
+                      "px-3 py-3 sm:px-4",
+                      column.meta?.cellClassName,
+                    )}
                   >
                     <Skeleton className="h-4 w-full" />
                   </TableCell>
@@ -165,7 +170,7 @@ function DataTable<TData extends RowData>({
                     <TableCell
                       key={cell.id}
                       className={cn(
-                        "px-4 py-3",
+                        "px-3 py-3 sm:px-4",
                         meta?.align === "end" && "text-right",
                         meta?.cellClassName,
                       )}
@@ -210,7 +215,8 @@ function DataTableSortButton({
       variant="ghost"
       size="sm"
       data-slot="data-table-sort-button"
-      className="-ml-3 h-8 font-medium"
+      // Offsets the horizontal padding so the label lines up with the cells.
+      className="text-foreground -ml-2.5 h-8 px-2.5 text-sm font-medium"
       onClick={onToggle}
     >
       {label}
