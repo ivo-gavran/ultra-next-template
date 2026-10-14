@@ -60,6 +60,10 @@ pnpm setup -- --yes \
 
 Use local URLs when developing. `--yes` accepts current defaults for unspecified values; `--help` lists every option. Setup creates `.env.local` if absent and preserves unrelated entries in an existing file while updating the two public URLs. `.env.local` is ignored by Git. Public configuration is never a place for secrets. Both URLs must use HTTP or HTTPS without credentials, queries or fragments. Application URLs must be origins; API URLs may include an intentional path prefix. Local HTTP development is supported. Setup and runtime use the same validation.
 
+Setup normalizes duplicate `NEXT_PUBLIC_APP_URL` and `NEXT_PUBLIC_API_URL` assignments to one assignment per variable in each environment file. It accepts whitespace, `export`, `=` or colon-space separators, and single-, double- or backtick-quoted values (including multiline values). The first assignment is replaced and later duplicates removed; comments and unrelated values are preserved. Repeated setup with the same values does not rewrite files.
+
+Setup validates and prepares all output before writing, stages replacements beside each destination and preserves existing permission bits (`.env.local` defaults to `0600`). Ordinary write failures restore previously replaced files and remove temporary files. If restoration or cleanup also fails, the error lists paths needing manual recovery and retains any unrestored backup as `.setup-*/original` (ignored by Git); restore it before retrying. This is not a crash-safe multi-file transaction: interruption, power loss and simultaneous edits/setup runs require manual inspection. Run setup without concurrent file edits. Dry-run writes nothing.
+
 Setup does not edit `pnpm-lock.yaml`. After personalizing, run `pnpm install` and `pnpm typecheck`; commit any resulting lockfile changes alongside the identity changes. Use frozen installs for subsequent verification.
 
 ## Environment and production configuration
@@ -96,7 +100,9 @@ The client validates the response against the schema you supply; it does not imp
 { error: { code: string; message: string; details?: unknown } }
 ```
 
-HTTP failures normalize to `AppError`; localized error messages and reporting hooks live in `src/lib/errors`. Query utilities support invalidation, paginated results and optimistic rollback without prescribing an application domain. Write API contract tests using the existing MSW Node server pattern in `src/lib/api/client.test.ts` when adding real integrations.
+HTTP failures normalize to `AppError`; localized error messages and reporting hooks live in `src/lib/errors`. Query utilities support invalidation, paginated results and optimistic rollback without prescribing an application domain. Optimistic rollback is one-shot and restores its snapshot only if the same query state is still current. Any later state transition (including refetch, invalidation, reset or a server response with equal data) conservatively prevents rollback. If no cached data existed, rollback does nothing. Serialize mutations on a query key for reliable snapshot rollback. If mutations overlap, earlier rollback skips newer data; a later rollback may still contain an earlier optimistic change. Generic updaters cannot reconstruct that state: invalidate/refetch after **all** overlapping mutations settle to reconcile with the server.
+
+Write API contract tests using the existing MSW Node server pattern in `src/lib/api/client.test.ts` when adding real integrations.
 
 ## Configure authentication and reporting
 

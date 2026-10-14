@@ -50,3 +50,6 @@ messages/*.d.json.ts
 
 # storybook
 /storybook-static/
+
+# Setup staging and recovery backups may contain local secrets
+.setup-*/
