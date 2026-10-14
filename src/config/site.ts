@@ -23,7 +23,6 @@ export const siteConfig = {
 
 export const publicRoutes = [
   { path: "/", changeFrequency: "weekly", priority: 1 },
-  { path: "/projects", changeFrequency: "monthly", priority: 0.7 },
 ] as const;
 
 export type PublicPath = (typeof publicRoutes)[number]["path"];

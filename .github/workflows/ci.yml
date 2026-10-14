@@ -15,7 +15,6 @@ jobs:
     env:
       NEXT_PUBLIC_APP_URL: https://app.example.test
       NEXT_PUBLIC_API_URL: https://api.example.test
-      NEXT_PUBLIC_API_MOCKING: disabled
     steps:
       - uses: actions/checkout@v7
       - uses: pnpm/action-setup@v6
@@ -90,7 +89,6 @@ jobs:
     env:
       NEXT_PUBLIC_APP_URL: https://app.example.test
       NEXT_PUBLIC_API_URL: https://api.example.test
-      NEXT_PUBLIC_API_MOCKING: disabled
       NEXT_TELEMETRY_DISABLED: 1
     steps:
       - uses: actions/checkout@v7

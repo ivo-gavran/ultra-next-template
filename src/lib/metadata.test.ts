@@ -7,36 +7,36 @@ import { createPageMetadata } from "./metadata";
 describe("createPageMetadata", () => {
   it("creates localized canonical, language and social metadata", () => {
     const metadata = createPageMetadata({
-      description: "Opis projekta",
+      description: "Opis aplikacije",
       locale: "bs",
-      path: "/projects",
-      title: "Projekti",
+      path: "/",
+      title: "Početna",
     });
 
     expect(metadata).toMatchObject({
-      title: "Projekti",
-      description: "Opis projekta",
+      title: "Početna",
+      description: "Opis aplikacije",
       alternates: {
-        canonical: `${siteConfig.url}/bs/projects`,
+        canonical: `${siteConfig.url}/bs`,
         languages: {
-          en: `${siteConfig.url}/en/projects`,
-          bs: `${siteConfig.url}/bs/projects`,
-          "x-default": `${siteConfig.url}/${siteConfig.defaultLocale}/projects`,
+          en: `${siteConfig.url}/en`,
+          bs: `${siteConfig.url}/bs`,
+          "x-default": `${siteConfig.url}/${siteConfig.defaultLocale}`,
         },
       },
       openGraph: {
         type: "website",
-        title: "Projekti",
-        description: "Opis projekta",
-        url: `${siteConfig.url}/bs/projects`,
+        title: "Početna",
+        description: "Opis aplikacije",
+        url: `${siteConfig.url}/bs`,
         siteName: siteConfig.name,
         locale: "bs_BA",
         alternateLocale: ["en_US"],
       },
       twitter: {
         card: "summary",
-        title: "Projekti",
-        description: "Opis projekta",
+        title: "Početna",
+        description: "Opis aplikacije",
       },
     });
   });

@@ -8,7 +8,7 @@ module.exports = {
       startServerCommand: "pnpm start --hostname 127.0.0.1 --port 3200",
       startServerReadyPattern: "Ready",
       startServerReadyTimeout: 60_000,
-      url: ["http://127.0.0.1:3200/en", "http://127.0.0.1:3200/en/projects"],
+      url: ["http://127.0.0.1:3200/en", "http://127.0.0.1:3200/bs"],
       settings: {
         chromeFlags: "--headless --no-sandbox --disable-gpu",
         onlyCategories: ["performance"],

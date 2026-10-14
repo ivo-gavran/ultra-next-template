@@ -10,35 +10,35 @@ import {
   type DataTableColumns,
 } from "@/components/ui/data-table";
 
-type Project = {
+type Item = {
   createdAt: string;
   description: string | null;
   id: string;
   name: string;
 };
 
-const projects: Project[] = [
+const items: Item[] = [
   {
     createdAt: "Sep 15, 2026",
-    description: "Replace the development mock URL when your backend is ready.",
+    description: "A row with a description.",
     id: "1",
-    name: "Connect the real API",
+    name: "Item one",
   },
   {
     createdAt: "Aug 19, 2026",
-    description: "Exercise the shared mutation and notification patterns.",
+    description: "Another row with a description.",
     id: "2",
-    name: "Invite the first team",
+    name: "Item two",
   },
   {
     createdAt: "Jul 4, 2026",
     description: null,
     id: "3",
-    name: "Review accessibility",
+    name: "Item three",
   },
 ];
 
-const columns: DataTableColumns<Project> = [
+const columns: DataTableColumns<Item> = [
   {
     accessorKey: "name",
     header: () => (
@@ -100,10 +100,10 @@ type Story = StoryObj<typeof meta>;
 export const Default: Story = {
   render: () => (
     <DataTable
-      caption="Projects with their description, creation date and row actions."
+      caption="Items with their description, creation date and row actions."
       columns={columns}
-      data={projects}
-      getRowId={(project) => project.id}
+      data={items}
+      getRowId={(item) => item.id}
     />
   ),
 };
@@ -111,7 +111,7 @@ export const Default: Story = {
 export const Loading: Story = {
   render: () => (
     <DataTable
-      caption="Projects with their description, creation date and row actions."
+      caption="Items with their description, creation date and row actions."
       columns={columns}
       data={[]}
       isLoading
@@ -123,14 +123,11 @@ export const Loading: Story = {
 export const Empty: Story = {
   render: () => (
     <DataTable
-      caption="Projects with their description, creation date and row actions."
+      caption="Items with their description, creation date and row actions."
       columns={columns}
       data={[]}
       emptyState={
-        <EmptyState
-          className="border-0"
-          title="No projects match your search."
-        />
+        <EmptyState className="border-0" title="No items match your search." />
       }
     />
   ),
@@ -139,10 +136,10 @@ export const Empty: Story = {
 export const Refetching: Story = {
   render: () => (
     <DataTable
-      caption="Projects with their description, creation date and row actions."
+      caption="Items with their description, creation date and row actions."
       columns={columns}
-      data={projects}
-      getRowId={(project) => project.id}
+      data={items}
+      getRowId={(item) => item.id}
       isFetching
     />
   ),

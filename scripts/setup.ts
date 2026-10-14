@@ -276,15 +276,22 @@ export async function applySetup(
   site.localized.en.description = values.descriptionEn;
   site.localized.bs.description = values.descriptionBs;
 
-  const environment = setEnvValues(envContent, {
+  const environmentValues = {
     NEXT_PUBLIC_APP_URL: values.appUrl,
     NEXT_PUBLIC_API_URL: values.apiUrl,
-  });
+  };
+  const environment = setEnvValues(envContent, environmentValues);
+  const localEnvironment = await readFile(paths.envLocal, "utf8").catch(
+    (error: NodeJS.ErrnoException) => {
+      if (error.code === "ENOENT") return envContent;
+      throw error;
+    },
+  );
   const outputs = new Map<string, string>([
     [paths.package, `${JSON.stringify(packageJson, null, 2)}\n`],
     [paths.site, `${JSON.stringify(site, null, 2)}\n`],
     [paths.envExample, environment],
-    [paths.envLocal, environment],
+    [paths.envLocal, setEnvValues(localEnvironment, environmentValues)],
     [
       paths.readme,
       identityChanged

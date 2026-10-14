@@ -40,7 +40,7 @@ async function createFixture() {
     ),
     writeFile(
       join(root, ".env.example"),
-      "# App\nNEXT_PUBLIC_APP_URL=http://localhost:3000\nNEXT_PUBLIC_API_URL=http://localhost:4000\nNEXT_PUBLIC_API_MOCKING=enabled\n",
+      "# App\nNEXT_PUBLIC_APP_URL=http://localhost:3000\nNEXT_PUBLIC_API_URL=http://localhost:4000\n",
     ),
     writeFile(
       join(root, "README.md"),
@@ -164,6 +164,41 @@ describe("setup CLI", () => {
     await expect(
       readFile(join(fixture.root, "README.md"), "utf8"),
     ).resolves.toContain("# Acme Portal");
+  });
+
+  it("preserves unrelated local environment values and leaves every file untouched in dry-run", async () => {
+    const fixture = await createFixture();
+    const localEnv =
+      "# Local settings\nPRIVATE_SETTING=keep-me\nNEXT_PUBLIC_APP_URL=http://localhost:3000\nNEXT_PUBLIC_API_URL=http://localhost:4000\n";
+    await writeFile(join(fixture.root, ".env.local"), localEnv);
+    const values = {
+      ...(await readSetupDefaults(fixture.root, fixture.paths)),
+      appUrl: "https://app.example.test",
+      apiUrl: "https://api.example.test/v1",
+    };
+    const files = Object.values(fixture.paths).map((path) =>
+      join(fixture.root, path),
+    );
+    const before = await Promise.all(
+      files.map((path) => readFile(path, "utf8")),
+    );
+    await applySetup(fixture.root, values, {
+      dryRun: true,
+      paths: fixture.paths,
+    });
+    expect(
+      await Promise.all(files.map((path) => readFile(path, "utf8"))),
+    ).toEqual(before);
+
+    await applySetup(fixture.root, values, { paths: fixture.paths });
+    await expect(
+      readFile(join(fixture.root, ".env.local"), "utf8"),
+    ).resolves.toBe(
+      "# Local settings\nPRIVATE_SETTING=keep-me\nNEXT_PUBLIC_APP_URL=https://app.example.test\nNEXT_PUBLIC_API_URL=https://api.example.test/v1\n",
+    );
+    await expect(
+      readFile(join(fixture.root, ".env.example"), "utf8"),
+    ).resolves.not.toContain("PRIVATE_SETTING");
   });
 
   it("preserves template copy when the identity values are unchanged", async () => {

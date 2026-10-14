@@ -10,15 +10,15 @@ import {
 
 describe("async state components", () => {
   it("announces loading state", () => {
-    render(<LoadingState label="Loading projects" />);
+    render(<LoadingState label="Loading items" />);
 
-    expect(screen.getByRole("status")).toHaveTextContent("Loading projects");
+    expect(screen.getByRole("status")).toHaveTextContent("Loading items");
   });
 
   it("renders an empty state", () => {
-    render(<EmptyState title="No projects yet" />);
+    render(<EmptyState title="No items yet" />);
 
-    expect(screen.getByText("No projects yet")).toBeInTheDocument();
+    expect(screen.getByText("No items yet")).toBeInTheDocument();
   });
 
   it("allows retrying an error state", async () => {
@@ -27,7 +27,7 @@ describe("async state components", () => {
 
     render(
       <ErrorState
-        title="Projects could not be loaded"
+        title="Items could not be loaded"
         retryLabel="Try again"
         onRetry={onRetry}
       />,

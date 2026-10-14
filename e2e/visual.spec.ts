@@ -26,21 +26,6 @@ test("home page in light and dark themes", async ({ page }) => {
   });
 });
 
-test("projects workflow shell", async ({ page }) => {
-  await page.emulateMedia({ colorScheme: "light", reducedMotion: "reduce" });
-  await page.goto("/en/projects");
-  await expect(
-    page.getByRole("cell", { name: "Connect the real API", exact: true }),
-  ).toBeVisible();
-  await expect(
-    page.getByRole("region", { name: "Overview" }).getByText("Total projects"),
-  ).toBeVisible();
-  await expect(page).toHaveScreenshot("projects-light.png", {
-    fullPage: true,
-    stylePath,
-  });
-});
-
 test("mobile home shell", async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.emulateMedia({ colorScheme: "light", reducedMotion: "reduce" });

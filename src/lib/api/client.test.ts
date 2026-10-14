@@ -37,9 +37,9 @@ afterAll(() => server.close());
 describe("createApiClient", () => {
   it("builds path and query params, resolves headers and validates responses", async () => {
     server.use(
-      http.get(`${baseURL}/projects/:id`, ({ params, request }) => {
+      http.get(`${baseURL}/items/:id`, ({ params, request }) => {
         const url = new URL(request.url);
-        expect(params.id).toBe("project one");
+        expect(params.id).toBe("item one");
         expect(url.searchParams.get("page")).toBe("2");
         expect(url.searchParams.getAll("tag[]")).toEqual(["web", "mobile"]);
         expect(request.headers.get("X-App-Version")).toBe("1");
@@ -55,18 +55,18 @@ describe("createApiClient", () => {
       auth: { getAccessToken: () => "token" },
     });
 
-    const result = await client.get("/projects/:id", {
-      pathParams: { id: "project one" },
+    const result = await client.get("/items/:id", {
+      pathParams: { id: "item one" },
       query: { page: 2, tag: ["web", "mobile"] },
       schema: z.object({ data: z.object({ id: z.string() }) }),
     });
 
-    expect(result).toEqual({ data: { id: "project one" } });
+    expect(result).toEqual({ data: { id: "item one" } });
   });
 
   it("throws a structured error for unsuccessful requests", async () => {
     server.use(
-      http.get(`${baseURL}/projects`, () =>
+      http.get(`${baseURL}/items`, () =>
         HttpResponse.json(
           {
             error: {
@@ -81,7 +81,7 @@ describe("createApiClient", () => {
     );
 
     const client = createApiClient({ baseURL });
-    const request = client.get("/projects", {
+    const request = client.get("/items", {
       schema: z.object({ data: z.array(z.unknown()) }),
     });
 
@@ -95,13 +95,13 @@ describe("createApiClient", () => {
 
   it("rejects successful but malformed responses", async () => {
     server.use(
-      http.get(`${baseURL}/projects`, () =>
+      http.get(`${baseURL}/items`, () =>
         HttpResponse.json({ data: { wrong: true } }),
       ),
     );
 
     const client = createApiClient({ baseURL });
-    const request = client.get("/projects", {
+    const request = client.get("/items", {
       schema: z.object({ data: z.object({ id: z.string() }) }),
     });
 
@@ -112,7 +112,7 @@ describe("createApiClient", () => {
       expect.objectContaining({ code: ErrorCode.InvalidResponse }),
       {
         source: "api",
-        operation: "GET /projects",
+        operation: "GET /items",
         metadata: { code: ErrorCode.InvalidResponse, status: 200 },
       },
     );
@@ -121,7 +121,7 @@ describe("createApiClient", () => {
   it("supports empty 204 responses", async () => {
     server.use(
       http.delete(
-        `${baseURL}/projects/:id`,
+        `${baseURL}/items/:id`,
         () => new HttpResponse(null, { status: 204 }),
       ),
     );
@@ -129,7 +129,7 @@ describe("createApiClient", () => {
     const client = createApiClient({ baseURL });
 
     await expect(
-      client.delete("/projects/:id", { pathParams: { id: "project-1" } }),
+      client.delete("/items/:id", { pathParams: { id: "item-1" } }),
     ).resolves.toBeUndefined();
   });
 

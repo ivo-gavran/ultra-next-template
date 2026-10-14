@@ -9,8 +9,8 @@ describe("Button", () => {
     const user = userEvent.setup();
     const onClick = vi.fn();
 
-    render(<Button onClick={onClick}>Create project</Button>);
-    await user.click(screen.getByRole("button", { name: "Create project" }));
+    render(<Button onClick={onClick}>Create item</Button>);
+    await user.click(screen.getByRole("button", { name: "Create item" }));
 
     expect(onClick).toHaveBeenCalledOnce();
   });

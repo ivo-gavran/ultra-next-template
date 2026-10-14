@@ -20,21 +20,21 @@ function FormControlsPreview() {
   return (
     <div className="grid max-w-xl gap-5">
       <Field>
-        <FieldLabel htmlFor="story-name">Project name</FieldLabel>
-        <Input id="story-name" defaultValue="Launch customer portal" />
+        <FieldLabel htmlFor="story-name">Item name</FieldLabel>
+        <Input id="story-name" defaultValue="Example name" />
       </Field>
       <Field>
         <FieldLabel htmlFor="story-description">Description</FieldLabel>
         <Textarea
           id="story-description"
-          defaultValue="A reusable product workflow built on the typed API boundary."
+          defaultValue="An example description."
         />
         <FieldDescription>
           Keep the summary concise and useful.
         </FieldDescription>
       </Field>
       <Field>
-        <FieldLabel htmlFor="story-sort">Sort projects</FieldLabel>
+        <FieldLabel htmlFor="story-sort">Sort items</FieldLabel>
         <Select defaultValue="newest">
           <SelectTrigger id="story-sort">
             <SelectValue />
@@ -65,7 +65,7 @@ export const ValidationError: Story = {
   render: () => (
     <div className="max-w-xl">
       <Field data-invalid>
-        <FieldLabel htmlFor="story-invalid-name">Project name</FieldLabel>
+        <FieldLabel htmlFor="story-invalid-name">Item name</FieldLabel>
         <Input
           id="story-invalid-name"
           defaultValue="A"
@@ -73,7 +73,7 @@ export const ValidationError: Story = {
           aria-describedby="story-invalid-name-error"
         />
         <FieldError id="story-invalid-name-error">
-          Project name must contain at least 2 characters.
+          Item name must contain at least 2 characters.
         </FieldError>
       </Field>
     </div>
