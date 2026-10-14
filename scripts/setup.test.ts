@@ -115,6 +115,32 @@ describe("setup CLI", () => {
     ).toThrow("must not include a path");
   });
 
+  it("never writes credential-bearing API URLs into any setup file", async () => {
+    const fixture = await createFixture();
+    const values = {
+      ...(await readSetupDefaults(fixture.root, fixture.paths)),
+      apiUrl: "https://synthetic-user:synthetic-password@api.example.test/v1",
+    };
+    const files = [
+      "package.json",
+      "site.json",
+      ".env.example",
+      "README.md",
+    ].map((path) => join(fixture.root, path));
+    const before = await Promise.all(
+      files.map((path) => readFile(path, "utf8")),
+    );
+    await expect(
+      applySetup(fixture.root, values, { paths: fixture.paths }),
+    ).rejects.toThrow("credentials");
+    expect(
+      await Promise.all(files.map((path) => readFile(path, "utf8"))),
+    ).toEqual(before);
+    await expect(
+      readFile(join(fixture.root, ".env.local"), "utf8"),
+    ).rejects.toThrow();
+  });
+
   it("updates identity and environments idempotently", async () => {
     const fixture = await createFixture();
     const values = {

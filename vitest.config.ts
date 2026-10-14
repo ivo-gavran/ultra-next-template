@@ -20,6 +20,7 @@ export default defineConfig({
         "src/components/ui/{async-state,button,data-table,sonner}.tsx",
         "src/components/ui/pagination.tsx",
         "src/config/{security-headers,site}.ts",
+        "src/config/{public-env,url-validation}.ts",
         "src/lib/api/client.ts",
         "src/lib/auth/adapter.ts",
         "src/lib/errors/{app-error,messages,reporting}.ts",

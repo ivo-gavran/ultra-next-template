@@ -9,7 +9,13 @@ export const onRequestError: Instrumentation.onRequestError = async (
 ) => {
   await reportAppError(error, {
     source: "server",
-    operation: `${request.method} ${context.routePath}`,
+    operation: request.method,
+    ...(typeof error === "object" &&
+    error !== null &&
+    "digest" in error &&
+    typeof error.digest === "string"
+      ? { trustedDigest: error.digest }
+      : {}),
     metadata: {
       renderSource: context.renderSource,
       revalidateReason: context.revalidateReason,
