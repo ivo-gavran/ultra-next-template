@@ -1,5 +1,5 @@
-import { readFile, writeFile } from "node:fs/promises";
-import { resolve } from "node:path";
+import fs from "node:fs/promises";
+import { dirname, join, resolve } from "node:path";
 import { createInterface } from "node:readline/promises";
 import { fileURLToPath } from "node:url";
 
@@ -78,31 +78,35 @@ function parseJson<T>(content: string, path: string): T {
   }
 }
 
+// Dotenv assignment forms: optional export, = or colon-space, and quoted values.
+const ENV_ASSIGNMENT =
+  /^[ \t]*(?:export[ \t]+)?([\w.-]+)(?:[ \t]*=[ \t]*|:[ \t]+)('(?:\\'|[^'])*'|"(?:\\"|[^"])*"|`(?:\\`|[^`])*`|[^\r\n#]*)([ \t]*#[^\r\n]*)?[ \t]*(?=\r?$)/gm;
+
 function readEnvValue(content: string, name: string): string | undefined {
-  return content
-    .split(/\r?\n/)
-    .find((line) => line.startsWith(`${name}=`))
-    ?.slice(name.length + 1);
+  const match = [...content.matchAll(ENV_ASSIGNMENT)]
+    .filter((entry) => entry[1] === name)
+    .at(-1);
+  return match?.[2]?.trim().replace(/^(['"`])([\s\S]*)\1$/, "$2");
 }
 
 function setEnvValues(content: string, values: Record<string, string>): string {
-  const pending = new Map(Object.entries(values));
-  const lines = content.split(/\r?\n/).map((line) => {
-    const separator = line.indexOf("=");
-    if (separator < 0) return line;
-
-    const name = line.slice(0, separator);
-    const value = pending.get(name);
-    if (value === undefined) return line;
-
-    pending.delete(name);
-    return `${name}=${value}`;
-  });
-
-  if (pending.size > 0 && lines.at(-1) !== "") lines.push("");
-  for (const [name, value] of pending) lines.push(`${name}=${value}`);
-
-  return `${lines.join("\n").replace(/\n+$/, "")}\n`;
+  const seen = new Set<string>();
+  // Match whole dotenv assignments, including unrelated multiline quoted values.
+  // This prevents assignment-looking text inside secrets from being edited.
+  const updated = content.replace(
+    ENV_ASSIGNMENT,
+    (line, name: string, _value: string, comment: string | undefined) => {
+      if (!Object.hasOwn(values, name)) return line;
+      const value = values[name];
+      const suffix = comment ? ` ${comment.trimStart()}` : "";
+      if (seen.has(name)) return comment?.trimStart() ?? "";
+      seen.add(name);
+      return `${name}=${value}${suffix}`;
+    },
+  );
+  const missing = Object.entries(values).filter(([name]) => !seen.has(name));
+  if (!missing.length) return updated;
+  return `${updated}${updated.endsWith("\n") ? "" : "\n"}${missing.map(([name, value]) => `${name}=${value}\n`).join("")}`;
 }
 
 function assertNonEmpty(value: string, label: string): void {
@@ -162,9 +166,9 @@ export async function readSetupDefaults(
   files: SetupPaths = SETUP_FILES,
 ): Promise<SetupValues> {
   const [packageContent, siteContent, envContent] = await Promise.all([
-    readFile(resolve(root, files.package), "utf8"),
-    readFile(resolve(root, files.site), "utf8"),
-    readFile(resolve(root, files.envExample), "utf8"),
+    fs.readFile(resolve(root, files.package), "utf8"),
+    fs.readFile(resolve(root, files.site), "utf8"),
+    fs.readFile(resolve(root, files.envExample), "utf8"),
   ]);
   const packageJson = parseJson<PackageJson>(packageContent, files.package);
   const site = parseJson<SiteConfig>(siteContent, files.site);
@@ -225,10 +229,10 @@ export async function applySetup(
   };
   const [packageContent, siteContent, envContent, readmeContent] =
     await Promise.all([
-      readFile(paths.package, "utf8"),
-      readFile(paths.site, "utf8"),
-      readFile(paths.envExample, "utf8"),
-      readFile(paths.readme, "utf8"),
+      fs.readFile(paths.package, "utf8"),
+      fs.readFile(paths.site, "utf8"),
+      fs.readFile(paths.envExample, "utf8"),
+      fs.readFile(paths.readme, "utf8"),
     ]);
   const packageJson = parseJson<PackageJson>(packageContent, files.package);
   const site = parseJson<SiteConfig>(siteContent, files.site);
@@ -252,12 +256,12 @@ export async function applySetup(
     NEXT_PUBLIC_API_URL: values.apiUrl,
   };
   const environment = setEnvValues(envContent, environmentValues);
-  const localEnvironment = await readFile(paths.envLocal, "utf8").catch(
-    (error: NodeJS.ErrnoException) => {
+  const localEnvironment = await fs
+    .readFile(paths.envLocal, "utf8")
+    .catch((error: NodeJS.ErrnoException) => {
       if (error.code === "ENOENT") return envContent;
       throw error;
-    },
-  );
+    });
   const outputs = new Map<string, string>([
     [paths.package, `${JSON.stringify(packageJson, null, 2)}\n`],
     [paths.site, `${JSON.stringify(site, null, 2)}\n`],
@@ -271,12 +275,95 @@ export async function applySetup(
     ],
   ]);
 
-  const changed: string[] = [];
+  // Prepare everything before any destination is replaced. Only envLocal may
+  // be absent; other read/stat failures must abort without modifying the project.
+  const changes: {
+    path: string;
+    content: string;
+    original: string | undefined;
+    mode: number;
+    stage?: string;
+    backup?: string;
+  }[] = [];
   for (const [path, content] of outputs) {
-    const current = await readFile(path, "utf8").catch(() => undefined);
-    if (current === content) continue;
-    changed.push(path);
-    if (!dryRun) await writeFile(path, content);
+    let original: string | undefined;
+    let mode = path === paths.envLocal ? 0o600 : 0o644;
+    try {
+      const info = await fs.lstat(path);
+      if (!info.isFile())
+        throw new Error(`Setup requires a regular file: ${path}`);
+      mode = info.mode & 0o777;
+      original = await fs.readFile(path, "utf8");
+    } catch (error) {
+      if (
+        path !== paths.envLocal ||
+        (error as NodeJS.ErrnoException).code !== "ENOENT"
+      )
+        throw error;
+    }
+    if (original !== content) changes.push({ path, content, original, mode });
+  }
+  const changed = changes.map(({ path }) => path);
+  if (!dryRun) {
+    const temporaryDirectories: string[] = [];
+    const applied: typeof changes = [];
+    const recoveryFailures: string[] = [];
+    const retained = new Set<string>();
+    let failed = false;
+    try {
+      for (const change of changes) {
+        const directory = await fs.mkdtemp(
+          join(dirname(change.path), ".setup-"),
+        );
+        temporaryDirectories.push(directory);
+        change.stage = join(directory, "next");
+        await fs.writeFile(change.stage, change.content, { mode: change.mode });
+        await fs.chmod(change.stage, change.mode);
+        if (change.original !== undefined) {
+          change.backup = join(directory, "original");
+          await fs.writeFile(change.backup, change.original, {
+            mode: change.mode,
+          });
+          await fs.chmod(change.backup, change.mode);
+        }
+      }
+      for (const change of changes) {
+        await fs.rename(change.stage!, change.path);
+        applied.push(change);
+      }
+    } catch {
+      failed = true;
+      for (const change of applied.reverse()) {
+        try {
+          if (change.backup) await fs.rename(change.backup, change.path);
+          else await fs.rm(change.path);
+        } catch {
+          recoveryFailures.push(change.path);
+          if (change.backup) {
+            retained.add(dirname(change.backup));
+            recoveryFailures.push(change.backup);
+          }
+        }
+      }
+    } finally {
+      for (const directory of temporaryDirectories) {
+        if (retained.has(directory)) continue;
+        try {
+          await fs.rm(directory, { recursive: true, force: true });
+        } catch {
+          recoveryFailures.push(directory);
+        }
+      }
+    }
+    if (recoveryFailures.length) {
+      throw new Error(
+        `Setup recovery or cleanup incomplete; inspect and restore these paths before retrying: ${recoveryFailures.join(", ")}`,
+      );
+    }
+    if (failed)
+      throw new Error(
+        "Setup failed; original files restored. Resolve filesystem permissions or space issues and retry.",
+      );
   }
 
   return { changed, values };
