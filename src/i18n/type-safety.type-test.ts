@@ -1,12 +1,12 @@
 import { useTranslations, type Locale } from "next-intl";
 
 export function I18nTypeSafetyContract() {
-  const t = useTranslations("Projects");
+  const t = useTranslations("Resilience");
 
-  t("rowActions", { name: "Launch website" });
+  t("errorReference", { digest: "reference-123" });
 
   // @ts-expect-error The interpolation argument is required.
-  t("rowActions");
+  t("errorReference");
 
   // @ts-expect-error Unknown message keys must fail type checking.
   t("unknownKey");

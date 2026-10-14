@@ -9,7 +9,6 @@ export default defineConfig({
     env: {
       NEXT_PUBLIC_APP_URL: "https://app.example.test",
       NEXT_PUBLIC_API_URL: "https://api.example.test",
-      NEXT_PUBLIC_API_MOCKING: "disabled",
     },
     exclude: [...configDefaults.exclude, "e2e/**"],
     setupFiles: ["./src/test/setup.ts"],
@@ -21,7 +20,6 @@ export default defineConfig({
         "src/components/ui/{async-state,button,data-table,sonner}.tsx",
         "src/components/ui/pagination.tsx",
         "src/config/{security-headers,site}.ts",
-        "src/features/projects/{filters,queries}.ts",
         "src/lib/api/client.ts",
         "src/lib/auth/adapter.ts",
         "src/lib/errors/{app-error,messages,reporting}.ts",

@@ -11,7 +11,7 @@ describe("createQueryClient", () => {
 
     await expect(
       client.fetchQuery({
-        queryKey: ["projects"],
+        queryKey: ["items"],
         queryFn: () => Promise.reject(error),
         retry: false,
       }),
@@ -21,7 +21,7 @@ describe("createQueryClient", () => {
     expect(notifyError).toHaveBeenCalledWith(error);
     expect(reportError).toHaveBeenCalledWith(error, {
       source: "query",
-      operation: "projects",
+      operation: "items",
     });
   });
 
@@ -32,7 +32,7 @@ describe("createQueryClient", () => {
 
     await expect(
       client.fetchQuery({
-        queryKey: ["projects"],
+        queryKey: ["items"],
         queryFn: () => Promise.reject(new Error("Query failed")),
         retry: false,
         meta: { suppressErrorToast: true },
@@ -49,7 +49,7 @@ describe("createQueryClient", () => {
     const error = new Error("Mutation failed");
     const client = createQueryClient({ notifyError, reportError });
     const mutation = client.getMutationCache().build(client, {
-      mutationKey: ["projects", "create"],
+      mutationKey: ["items", "create"],
       mutationFn: () => Promise.reject(error),
     });
 
@@ -59,7 +59,7 @@ describe("createQueryClient", () => {
     expect(notifyError).toHaveBeenCalledWith(error);
     expect(reportError).toHaveBeenCalledWith(error, {
       source: "mutation",
-      operation: "projects",
+      operation: "items",
     });
   });
 

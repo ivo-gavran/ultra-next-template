@@ -24,12 +24,21 @@ test("renders localized canonical and social metadata", async ({
     "bs_BA",
   );
 
-  await page.goto("/en/projects");
+  await expect(page.locator('meta[name="description"]')).toHaveAttribute(
+    "content",
+    siteIdentity.localized.bs.description,
+  );
 
-  await expect(page).toHaveTitle(`Projects · ${siteIdentity.name}`);
+  await page.goto("/en");
+
+  await expect(page).toHaveTitle(siteIdentity.name);
+  await expect(page.locator('meta[name="description"]')).toHaveAttribute(
+    "content",
+    siteIdentity.localized.en.description,
+  );
   await expect(page.locator('meta[name="twitter:title"]')).toHaveAttribute(
     "content",
-    "Projects",
+    siteIdentity.name,
   );
 });
 
@@ -47,13 +56,16 @@ test("serves crawler and application metadata routes", async ({
   const sitemapResponse = await request.get("/sitemap.xml");
   expect(sitemapResponse.ok()).toBe(true);
   const sitemap = await sitemapResponse.text();
-  expect(sitemap).toContain(`${origin}/en/projects`);
+  expect(sitemap).toContain(`<loc>${origin}/en</loc>`);
+  expect(sitemap).toContain(`<loc>${origin}/bs</loc>`);
+  expect(sitemap.match(/<loc>/g)).toHaveLength(2);
   expect(sitemap).toContain('hreflang="bs"');
 
   const manifestResponse = await request.get("/manifest.webmanifest");
   expect(manifestResponse.ok()).toBe(true);
   await expect(manifestResponse.json()).resolves.toMatchObject({
     name: siteIdentity.name,
+    short_name: siteIdentity.shortName,
     start_url: `/${siteIdentity.defaultLocale}`,
     display: "standalone",
   });

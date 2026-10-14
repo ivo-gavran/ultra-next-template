@@ -15,22 +15,21 @@ export async function SiteHeader() {
       <div className="mx-auto flex h-16 w-full max-w-6xl items-center justify-between px-5">
         <Link
           href="/"
-          className="flex items-center gap-2 font-semibold tracking-tight"
+          className="flex min-w-0 items-center gap-2 font-semibold tracking-tight"
         >
-          <span className="bg-primary text-primary-foreground grid size-8 place-items-center rounded-xl">
-            <Atom className="size-4" />
+          <span className="bg-primary text-primary-foreground grid size-8 shrink-0 place-items-center rounded-xl">
+            <Atom aria-hidden="true" className="size-4" />
           </span>
-          {siteConfig.name}
+          <span className="truncate">{siteConfig.shortName}</span>
         </Link>
 
         <nav
-          className="flex items-center gap-1"
+          className="flex shrink-0 items-center gap-1"
           aria-label={t("mainNavigation")}
         >
           <NavLink href="/" className="hidden sm:inline-flex">
             {t("home")}
           </NavLink>
-          <NavLink href="/projects">{t("projects")}</NavLink>
           <span
             aria-hidden="true"
             className="bg-border mx-1.5 hidden h-5 w-px sm:block"

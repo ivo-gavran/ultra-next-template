@@ -7,7 +7,7 @@ const meta = {
   title: "UI/Button",
   component: Button,
   tags: ["autodocs"],
-  args: { children: "Create project" },
+  args: { children: "Create item" },
   argTypes: {
     variant: {
       control: "select",
@@ -33,7 +33,7 @@ type Story = StoryObj<typeof meta>;
 export const Default: Story = {};
 export const Outline: Story = { args: { variant: "outline" } };
 export const Destructive: Story = {
-  args: { variant: "destructive", children: "Delete project" },
+  args: { variant: "destructive", children: "Delete item" },
 };
 
 export const Loading: Story = {

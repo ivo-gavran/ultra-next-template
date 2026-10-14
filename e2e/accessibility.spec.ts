@@ -6,8 +6,6 @@ type AxeResults = Awaited<ReturnType<AxeBuilder["analyze"]>>;
 const auditedRoutes = [
   { name: "English home", path: "/en", colorScheme: "light" },
   { name: "Bosnian home", path: "/bs", colorScheme: "dark" },
-  { name: "English projects", path: "/en/projects", colorScheme: "light" },
-  { name: "Bosnian projects", path: "/bs/projects", colorScheme: "dark" },
   {
     name: "localized not-found",
     path: "/bs/nepostojeca-stranica",
@@ -31,7 +29,7 @@ for (const route of auditedRoutes) {
   test(`${route.name} has no serious accessibility violations`, async ({
     page,
   }) => {
-    // Audit stable colors rather than intermediate entrance-animation opacity.
+    // Audit both locale and color-scheme combinations.
     await page.emulateMedia({
       colorScheme: route.colorScheme,
       reducedMotion: "reduce",
@@ -65,21 +63,4 @@ test("keyboard users can skip repeated navigation", async ({ page }) => {
 
   await page.keyboard.press("Enter");
   await expect(main).toBeFocused();
-});
-
-test("invalid form fields expose and focus their error message", async ({
-  page,
-}) => {
-  await page.goto("/en/projects");
-
-  const nameInput = page.getByLabel("Project name");
-  await page.getByRole("button", { name: "Add project" }).click();
-
-  await expect(nameInput).toBeFocused();
-  await expect(nameInput).toHaveAttribute("aria-invalid", "true");
-  await expect(nameInput).toHaveAttribute(
-    "aria-describedby",
-    "project-name-error",
-  );
-  await expect(page.locator("#project-name-error")).toHaveRole("alert");
 });

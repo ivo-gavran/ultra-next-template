@@ -31,7 +31,7 @@ describe("reportAppError", () => {
 
     await reportAppError(error, {
       source: "api",
-      operation: "GET /projects/:id",
+      operation: "GET /items/:id",
       metadata: {
         authorization: "Bearer secret",
         nested: { password: "secret", safe: "value" },
@@ -43,7 +43,7 @@ describe("reportAppError", () => {
     expect(report).toMatchObject({
       context: {
         source: "api",
-        operation: "GET /projects/:id",
+        operation: "GET /items/:id",
         metadata: {
           authorization: "[REDACTED]",
           nested: { password: "[REDACTED]", safe: "value" },

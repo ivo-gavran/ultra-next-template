@@ -14,13 +14,13 @@ describe("onRequestError", () => {
     await onRequestError(
       error,
       {
-        path: "/en/projects?token=secret",
+        path: "/en/items?token=secret",
         method: "GET",
         headers: { authorization: "Bearer secret" },
       },
       {
         routerKind: "App Router",
-        routePath: "/app/[locale]/projects/page",
+        routePath: "/app/[locale]/items/page",
         routeType: "render",
         renderSource: "server-rendering",
         revalidateReason: undefined,
@@ -29,7 +29,7 @@ describe("onRequestError", () => {
 
     expect(reportAppError).toHaveBeenCalledWith(error, {
       source: "server",
-      operation: "GET /app/[locale]/projects/page",
+      operation: "GET /app/[locale]/items/page",
       metadata: {
         renderSource: "server-rendering",
         revalidateReason: undefined,

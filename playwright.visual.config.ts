@@ -23,7 +23,6 @@ export default defineConfig({
     env: {
       NEXT_PUBLIC_APP_URL: baseURL,
       NEXT_PUBLIC_API_URL: "https://api.example.test",
-      NEXT_PUBLIC_API_MOCKING: "enabled",
       NEXT_TELEMETRY_DISABLED: "1",
     },
   },

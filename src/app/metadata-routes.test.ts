@@ -31,20 +31,18 @@ describe("metadata routes", () => {
   it("lists every public route in every locale without volatile timestamps", () => {
     const entries = sitemap();
 
-    expect(entries).toHaveLength(4);
+    expect(entries).toHaveLength(2);
     expect(entries.map((entry) => entry.url)).toEqual([
       `${siteConfig.url}/en`,
       `${siteConfig.url}/bs`,
-      `${siteConfig.url}/en/projects`,
-      `${siteConfig.url}/bs/projects`,
     ]);
     expect(entries.every((entry) => entry.lastModified === undefined)).toBe(
       true,
     );
-    expect(entries[2]?.alternates?.languages).toEqual({
-      en: `${siteConfig.url}/en/projects`,
-      bs: `${siteConfig.url}/bs/projects`,
-      "x-default": `${siteConfig.url}/${siteConfig.defaultLocale}/projects`,
+    expect(entries[0]?.alternates?.languages).toEqual({
+      en: `${siteConfig.url}/en`,
+      bs: `${siteConfig.url}/bs`,
+      "x-default": `${siteConfig.url}/${siteConfig.defaultLocale}`,
     });
   });
 });

@@ -6,7 +6,7 @@ import { optimisticallyUpdateQuery } from "@/lib/query/optimistic";
 describe("optimisticallyUpdateQuery", () => {
   it("updates cached data and can roll it back", async () => {
     const queryClient = new QueryClient();
-    const queryKey = ["projects", "list", {}] as const;
+    const queryKey = ["items", "list", {}] as const;
     queryClient.setQueryData(queryKey, ["one", "two"]);
 
     const optimisticUpdate = await optimisticallyUpdateQuery<string[]>(
@@ -23,12 +23,12 @@ describe("optimisticallyUpdateQuery", () => {
 
   it("does not create a cache entry when no data is available", async () => {
     const queryClient = new QueryClient();
-    const queryKey = ["projects", "list", {}] as const;
+    const queryKey = ["items", "list", {}] as const;
 
     const optimisticUpdate = await optimisticallyUpdateQuery<string[]>(
       queryClient,
       queryKey,
-      (items) => [...items, "project"],
+      (items) => [...items, "item"],
     );
 
     expect(queryClient.getQueryState(queryKey)).toBeUndefined();
