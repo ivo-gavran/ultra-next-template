@@ -112,7 +112,7 @@ describe("createApiClient", () => {
       expect.objectContaining({ code: ErrorCode.InvalidResponse }),
       {
         source: "api",
-        operation: "GET /items",
+        operation: "GET",
         metadata: { code: ErrorCode.InvalidResponse, status: 200 },
       },
     );

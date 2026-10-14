@@ -17,7 +17,10 @@ export default function LocaleError({
   const t = useTranslations("Resilience");
 
   useEffect(() => {
-    void reportAppError(error, { source: "route-boundary" });
+    void reportAppError(error, {
+      source: "route-boundary",
+      ...(error.digest ? { trustedDigest: error.digest } : {}),
+    });
   }, [error]);
 
   return (

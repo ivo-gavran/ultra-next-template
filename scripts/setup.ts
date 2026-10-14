@@ -3,6 +3,8 @@ import { resolve } from "node:path";
 import { createInterface } from "node:readline/promises";
 import { fileURLToPath } from "node:url";
 
+import { validatePublicUrl } from "../src/config/url-validation.ts";
+
 export type SetupPaths = {
   envExample: string;
   envLocal: string;
@@ -107,37 +109,6 @@ function assertNonEmpty(value: string, label: string): void {
   if (!value.trim()) throw new Error(`${label} cannot be empty`);
 }
 
-function assertOrigin(value: string, label: string): string {
-  let url;
-  try {
-    url = new URL(value);
-  } catch {
-    throw new Error(`${label} must be a valid URL origin`);
-  }
-
-  if (
-    url.pathname !== "/" ||
-    url.search ||
-    url.hash ||
-    url.username ||
-    url.password
-  ) {
-    throw new Error(
-      `${label} must not include a path, query, fragment or credentials`,
-    );
-  }
-
-  return url.origin;
-}
-
-function assertUrl(value: string, label: string): string {
-  try {
-    return new URL(value).toString().replace(/\/$/, "");
-  } catch {
-    throw new Error(`${label} must be a valid URL`);
-  }
-}
-
 export function toPackageName(value: string): string {
   return value
     .normalize("NFKD")
@@ -234,8 +205,8 @@ export function validateSetupValues(
 
   return {
     ...values,
-    appUrl: assertOrigin(values.appUrl, "Application URL"),
-    apiUrl: assertUrl(values.apiUrl, "API URL"),
+    appUrl: validatePublicUrl(values.appUrl, "app"),
+    apiUrl: validatePublicUrl(values.apiUrl, "api"),
   };
 }
 

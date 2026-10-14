@@ -58,7 +58,7 @@ pnpm setup -- --yes \
   --description-bs "Opis moje aplikacije."
 ```
 
-Use local URLs when developing. `--yes` accepts current defaults for unspecified values; `--help` lists every option. Setup creates `.env.local` if absent and preserves unrelated entries in an existing file while updating the two public URLs. `.env.local` is ignored by Git. Public configuration is never a place for secrets.
+Use local URLs when developing. `--yes` accepts current defaults for unspecified values; `--help` lists every option. Setup creates `.env.local` if absent and preserves unrelated entries in an existing file while updating the two public URLs. `.env.local` is ignored by Git. Public configuration is never a place for secrets. Both URLs must use HTTP or HTTPS without credentials, queries or fragments. Application URLs must be origins; API URLs may include an intentional path prefix. Local HTTP development is supported. Setup and runtime use the same validation.
 
 Setup does not edit `pnpm-lock.yaml`. After personalizing, run `pnpm install` and `pnpm typecheck`; commit any resulting lockfile changes alongside the identity changes. Use frozen installs for subsequent verification.
 

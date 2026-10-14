@@ -8,6 +8,7 @@ import axios, {
 import type { z } from "zod";
 
 import { publicEnv } from "@/config/public-env";
+import { validatePublicUrl } from "@/config/url-validation";
 import { AppError, ErrorCode, isAppError } from "@/lib/errors";
 import { reportAppError } from "@/lib/errors/reporting";
 
@@ -28,6 +29,8 @@ export type ApiAuthHooks = {
 export type CreateApiClientOptions = {
   baseURL: string;
   timeout?: number;
+  /** Bounds shared refresh waiting; a timed-out provider must settle before another refresh. */
+  refreshTimeoutMs?: number;
   withCredentials?: boolean;
   getHeaders?: () => Awaitable<ApiHeaders>;
   auth?: ApiAuthHooks;
@@ -37,10 +40,8 @@ export type CreateApiClientOptions = {
 export type ApiRequestOptions<
   TSchema extends z.ZodType | undefined = undefined,
   TBody = unknown,
-> = Omit<
-  AxiosRequestConfig<TBody>,
-  "baseURL" | "data" | "method" | "params" | "url"
-> & {
+> = Pick<AxiosRequestConfig<TBody>, "headers" | "timeout" | "responseType"> & {
+  signal?: AbortSignal;
   body?: TBody;
   pathParams?: ApiPathParams;
   query?: ApiQueryParams;
@@ -54,6 +55,7 @@ type ApiResponse<TSchema extends z.ZodType | undefined> =
 
 type InternalRequestConfig = AxiosRequestConfig & {
   authRetryAttempted?: boolean;
+  providerHeaderNames?: string[];
   skipAuth?: boolean;
   skipAuthRefresh?: boolean;
 };
@@ -126,92 +128,232 @@ function toAppError(error: unknown): AppError {
 }
 
 function buildPath(path: string, pathParams?: ApiPathParams) {
-  return path.replace(/:([A-Za-z0-9_]+)/g, (_match, key: string) => {
-    const value = pathParams?.[key];
+  return path.replace(
+    /(^|\/):([A-Za-z0-9_]+)/g,
+    (_match, prefix: string, key: string) => {
+      const value = pathParams?.[key];
 
-    if (value === undefined) {
-      throw new AppError({
-        code: ErrorCode.Validation,
-        message: `Missing path parameter: ${key}`,
-        details: { parameter: key },
-      });
-    }
+      if (value === undefined) {
+        throw new AppError({
+          code: ErrorCode.Validation,
+          message: `Missing path parameter: ${key}`,
+          details: { parameter: key },
+        });
+      }
 
-    return encodeURIComponent(String(value));
+      return prefix + encodeURIComponent(String(value));
+    },
+  );
+}
+
+function reportApiError(error: AppError, method: Method) {
+  void reportAppError(error, {
+    source: "api",
+    operation: method.toUpperCase(),
+    metadata: { code: error.code, status: error.status },
   });
 }
 
-function reportApiError(error: AppError, method: Method, path: string) {
-  const resource = path.split("?")[0]?.split("/").filter(Boolean)[0];
-  void reportAppError(error, {
-    source: "api",
-    operation: `${method.toUpperCase()}${resource ? ` /${resource}` : ""}`,
-    metadata: { code: error.code, status: error.status },
+function invalidDestination(): never {
+  throw new AppError({
+    code: ErrorCode.Validation,
+    message:
+      "Request URL must stay within the configured API origin and path prefix.",
+  });
+}
+
+function createDestinationResolver(baseURL: string) {
+  const base = new URL(validatePublicUrl(baseURL, "api"));
+  const prefix = base.pathname.replace(/\/+$/, "");
+  return (path: string) => {
+    // Reject ambiguous URL forms and encoded/nested separators before URL normalization.
+    const pathname = path.split("?")[0] ?? "";
+    if (
+      /[\s\\]/.test(path) ||
+      path.startsWith("//") ||
+      path.includes("#") ||
+      /%(?:2f|5c|25)/i.test(pathname)
+    )
+      invalidDestination();
+    try {
+      if (
+        pathname.split("/").some((segment) => {
+          const decoded = decodeURIComponent(segment);
+          return decoded === "." || decoded === "..";
+        })
+      )
+        invalidDestination();
+      const absolute = /^[a-z][a-z0-9+.-]*:/i.test(path);
+      if (absolute && !/^https?:\/\//i.test(path)) invalidDestination();
+      const url = new URL(
+        absolute
+          ? path
+          : `${base.href.replace(/\/+$/, "")}/${path.replace(/^\//, "")}`,
+      );
+      if (
+        url.origin !== base.origin ||
+        url.username ||
+        url.password ||
+        (url.pathname !== prefix && !url.pathname.startsWith(`${prefix}/`))
+      )
+        invalidDestination();
+      return url.href;
+    } catch {
+      invalidDestination();
+    }
+  };
+}
+
+function abortedError() {
+  return new AppError({
+    code: ErrorCode.RequestAborted,
+    message: "The request was canceled.",
+  });
+}
+
+function waitForRefresh(
+  promise: Promise<void>,
+  signal: InternalRequestConfig["signal"],
+) {
+  if (signal?.aborted) return Promise.reject(abortedError());
+  return new Promise<void>((resolve, reject) => {
+    const abort = () => {
+      cleanup();
+      reject(abortedError());
+    };
+    const cleanup = () => signal?.removeEventListener?.("abort", abort);
+    signal?.addEventListener?.("abort", abort, { once: true });
+    promise.then(
+      () => {
+        cleanup();
+        resolve();
+      },
+      (error: unknown) => {
+        cleanup();
+        reject(error);
+      },
+    );
   });
 }
 
 export function createApiClient({
   baseURL,
   timeout = DEFAULT_TIMEOUT_MS,
+  refreshTimeoutMs = DEFAULT_TIMEOUT_MS,
   withCredentials = false,
   getHeaders,
   auth,
   adapter,
 }: CreateApiClientOptions) {
+  const resolveDestination = createDestinationResolver(baseURL);
+  if (!Number.isFinite(refreshTimeoutMs) || refreshTimeoutMs <= 0) {
+    throw new Error("refreshTimeoutMs must be a finite positive duration");
+  }
   const instance = axios.create({
-    baseURL: baseURL.replace(/\/$/, ""),
+    baseURL: validatePublicUrl(baseURL, "api"),
+    // Node HTTP and browser Fetch both stop redirects; XHR cannot enforce this.
+    adapter: adapter ?? ["http", "fetch"],
+    maxRedirects: 0,
+    fetchOptions: { redirect: "error" },
+    proxy: false,
     timeout,
     withCredentials,
     headers: { Accept: "application/json" },
-    ...(adapter ? { adapter } : {}),
   });
 
   let refreshPromise: Promise<void> | undefined;
 
   instance.interceptors.request.use(async (config) => {
+    // Validate before any provider is called or any credential is attached.
+    config.url = resolveDestination(config.url ?? "");
+    const internal = config as InternalRequestConfig;
+    if (config.signal?.aborted) throw abortedError();
     const headers = AxiosHeaders.from(config.headers);
-    const dynamicHeaders = (await getHeaders?.()) ?? {};
+    // Node permits Host overrides; they can route credentials to another virtual host.
+    if (headers.has("Host") || headers.has(":authority")) invalidDestination();
+    for (const name of internal.providerHeaderNames ?? []) headers.delete(name);
+    internal.providerHeaderNames = [];
+    const callerHasAuthorization = headers.has("Authorization");
 
-    for (const [name, value] of Object.entries(dynamicHeaders)) {
-      if (value !== undefined && !headers.has(name)) headers.set(name, value);
+    // Explicit caller headers win. Only provider-injected headers are rebuilt on retry.
+    if (!internal.skipAuth) {
+      const dynamicHeaders = (await getHeaders?.()) ?? {};
+      if (
+        Object.entries(dynamicHeaders).some(
+          ([name, value]) =>
+            value !== undefined && /^(?:host|:authority)$/i.test(name.trim()),
+        )
+      )
+        invalidDestination();
+      for (const [name, value] of Object.entries(dynamicHeaders)) {
+        if (value !== undefined && !headers.has(name)) {
+          headers.set(name, value);
+          internal.providerHeaderNames.push(name);
+        }
+      }
+      const accessToken = await auth?.getAccessToken?.();
+      if (accessToken && !callerHasAuthorization) {
+        headers.set("Authorization", `Bearer ${accessToken}`);
+        internal.providerHeaderNames.push("Authorization");
+      }
     }
-
-    const accessToken = (config as InternalRequestConfig).skipAuth
-      ? undefined
-      : await auth?.getAccessToken?.();
-    if (accessToken) {
-      headers.set("Authorization", `Bearer ${accessToken}`);
-    }
-
+    if (config.signal?.aborted) throw abortedError();
+    if (headers.has("Host") || headers.has(":authority")) invalidDestination();
     config.headers = headers;
     return config;
   });
 
-  async function refreshSession(error: AxiosError) {
+  function notifyUnauthorized(error: AppError) {
+    // Sign-out must not extend bounded refresh waiting or replace the request error.
+    void Promise.resolve()
+      .then(() => auth?.onUnauthorized?.(error))
+      .catch((cause: unknown) => {
+        void reportAppError(cause, { source: "api" });
+      });
+  }
+
+  async function refreshSession(
+    error: AxiosError,
+    signal: InternalRequestConfig["signal"],
+  ) {
     if (!auth?.refreshSession) return false;
+    if (signal?.aborted) throw abortedError();
 
     if (!refreshPromise) {
       const unauthorizedError = toAppError(error);
-      refreshPromise = auth
-        .refreshSession()
-        .catch(async (refreshError: unknown) => {
-          await auth.onUnauthorized?.(unauthorizedError);
+      let timer: ReturnType<typeof setTimeout>;
+      const providerRefresh = Promise.resolve().then(() =>
+        auth.refreshSession!(),
+      );
+      const deadline = new Promise<never>((_resolve, reject) => {
+        timer = setTimeout(
+          () => reject(new Error("Session refresh timed out.")),
+          refreshTimeoutMs,
+        );
+      });
+      const shared = Promise.race([providerRefresh, deadline])
+        .catch((cause: unknown) => {
+          notifyUnauthorized(unauthorizedError);
           throw new AppError({
             code: ErrorCode.Unauthorized,
             message: unauthorizedError.message,
+            status: 401,
             details: unauthorizedError.details,
-            cause: refreshError,
-            ...(unauthorizedError.status === undefined
-              ? {}
-              : { status: unauthorizedError.status }),
+            cause,
           });
         })
-        .finally(() => {
-          refreshPromise = undefined;
-        });
+        .finally(() => clearTimeout(timer));
+      refreshPromise = shared;
+      // Retain a timed-out flight until the underlying provider settles. New callers
+      // fail fast instead of starting overlapping refreshes with stale credentials.
+      const clearFlight = () => {
+        if (refreshPromise === shared) refreshPromise = undefined;
+      };
+      void providerRefresh.then(clearFlight, clearFlight);
     }
 
-    await refreshPromise;
+    await waitForRefresh(refreshPromise, signal);
+    if (signal?.aborted) throw abortedError();
     return true;
   }
 
@@ -228,12 +370,13 @@ export function createApiClient({
 
     if (canRefresh) {
       config.authRetryAttempted = true;
-      if (await refreshSession(error)) return instance.request(config);
+      if (await refreshSession(error, config.signal))
+        return instance.request(config);
     }
 
     const appError = toAppError(error);
-    if (appError.status === 401) {
-      await auth?.onUnauthorized?.(appError);
+    if (appError.status === 401 && !config?.skipAuth) {
+      notifyUnauthorized(appError);
     }
 
     throw appError;
@@ -252,14 +395,21 @@ export function createApiClient({
       schema,
       skipAuth,
       skipAuthRefresh,
-      ...config
+      headers,
+      timeout: requestTimeout,
+      signal,
+      responseType,
     }: ApiRequestOptions<TSchema, TBody> = {},
   ): Promise<ApiResponse<TSchema>> {
     try {
       const response = await instance.request<unknown>({
-        ...config,
+        // Runtime allowlist also protects JavaScript callers and unsafe casts.
+        headers,
+        timeout: requestTimeout ?? timeout,
+        signal,
+        responseType,
         method,
-        url: buildPath(path, pathParams),
+        url: resolveDestination(buildPath(path, pathParams)),
         params: query,
         data: body,
         skipAuth,
@@ -282,7 +432,7 @@ export function createApiClient({
       return parsed.data as ApiResponse<TSchema>;
     } catch (error) {
       const appError = toAppError(error);
-      reportApiError(appError, method, path);
+      reportApiError(appError, method);
       throw appError;
     }
   }
@@ -292,10 +442,12 @@ export function createApiClient({
       path: string,
       options?: Pick<ApiRequestOptions, "pathParams" | "query">,
     ) {
-      return instance.getUri({
-        url: buildPath(path, options?.pathParams),
-        params: options?.query,
-      });
+      return resolveDestination(
+        instance.getUri({
+          url: resolveDestination(buildPath(path, options?.pathParams)),
+          params: options?.query,
+        }),
+      );
     },
     request,
     get: <TSchema extends z.ZodType | undefined = undefined>(

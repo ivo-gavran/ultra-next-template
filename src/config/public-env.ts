@@ -1,23 +1,14 @@
 import { z } from "zod";
 
-const publicOriginSchema = z
-  .string()
-  .url()
-  .transform((value) => new URL(value))
-  .refine(
-    (url) =>
-      url.pathname === "/" &&
-      url.search === "" &&
-      url.hash === "" &&
-      url.username === "" &&
-      url.password === "",
-    "Expected an origin without a path, query, hash or credentials",
-  )
-  .transform((url) => url.origin);
+import { validatePublicUrl } from "./url-validation.ts";
 
-const publicEnvSchema = z.object({
-  NEXT_PUBLIC_APP_URL: publicOriginSchema,
-  NEXT_PUBLIC_API_URL: z.string().url(),
+export const publicEnvSchema = z.object({
+  NEXT_PUBLIC_APP_URL: z
+    .string()
+    .transform((value) => validatePublicUrl(value, "app")),
+  NEXT_PUBLIC_API_URL: z
+    .string()
+    .transform((value) => validatePublicUrl(value, "api")),
 });
 
 export const publicEnv = publicEnvSchema.parse({

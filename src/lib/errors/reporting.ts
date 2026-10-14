@@ -1,11 +1,44 @@
 import { ErrorCode, isAppError } from "@/lib/errors/app-error";
 
-const REDACTED = "[REDACTED]";
-const MAX_METADATA_DEPTH = 5;
-const MAX_COLLECTION_SIZE = 25;
-const MAX_STRING_LENGTH = 1_000;
-const sensitiveKeyPattern =
-  /authorization|cookie|credential|password|secret|session|token|api[-_]?key/i;
+const controlledCodes = new Set<string>(Object.values(ErrorCode));
+const safeErrorNames = new Set([
+  "Error",
+  "AppError",
+  "TypeError",
+  "RangeError",
+  "SyntaxError",
+  "ReferenceError",
+  "URIError",
+  "EvalError",
+  "AggregateError",
+]);
+const safeOperations = new Set([
+  "GET",
+  "POST",
+  "PUT",
+  "PATCH",
+  "DELETE",
+  "HEAD",
+  "OPTIONS",
+]);
+const safeSources = new Set([
+  "api",
+  "global-boundary",
+  "mutation",
+  "query",
+  "route-boundary",
+  "server",
+]);
+const metadataEnums: Record<string, readonly string[]> = {
+  renderSource: [
+    "react-server-components",
+    "react-server-components-payload",
+    "server-rendering",
+  ],
+  revalidateReason: ["on-demand", "stale"],
+  routeType: ["render", "route", "action", "proxy"],
+  routerKind: ["Pages Router", "App Router"],
+};
 
 type Awaitable<T> = T | Promise<T>;
 
@@ -23,6 +56,8 @@ export type ErrorReportContext = {
   source: ErrorReportSource;
   operation?: string;
   metadata?: Record<string, unknown>;
+  /** Only framework integrations may supply a trusted Next.js numeric digest. */
+  trustedDigest?: string;
 };
 
 export type ReportedError = Error & {
@@ -50,62 +85,27 @@ const consoleReporter: ErrorReporter = {
 let activeReporter = consoleReporter;
 const reportedErrors = new WeakSet<object>();
 
-function sanitizeString(value: string) {
-  return value.length <= MAX_STRING_LENGTH
-    ? value
-    : `${value.slice(0, MAX_STRING_LENGTH)}…`;
-}
-
-function sanitizeValue(
-  value: unknown,
-  depth: number,
-  seen: WeakSet<object>,
-): unknown {
-  if (
-    value === null ||
-    typeof value === "boolean" ||
-    typeof value === "number"
-  ) {
-    return value;
-  }
-
-  if (typeof value === "string") return sanitizeString(value);
-  if (typeof value === "bigint") return String(value);
-  if (typeof value === "undefined") return undefined;
-  if (typeof value === "function" || typeof value === "symbol") {
-    return String(value);
-  }
-
-  if (depth >= MAX_METADATA_DEPTH) return "[MAX_DEPTH]";
-  if (value instanceof Date) return value.toISOString();
-  if (value instanceof Error) {
-    return { message: sanitizeString(value.message), name: value.name };
-  }
-  if (seen.has(value)) return "[CIRCULAR]";
-
-  seen.add(value);
-
-  if (Array.isArray(value)) {
-    return value
-      .slice(0, MAX_COLLECTION_SIZE)
-      .map((item) => sanitizeValue(item, depth + 1, seen));
-  }
-
-  return Object.fromEntries(
-    Object.entries(value)
-      .slice(0, MAX_COLLECTION_SIZE)
-      .map(([key, item]) => [
-        key,
-        sensitiveKeyPattern.test(key)
-          ? REDACTED
-          : sanitizeValue(item, depth + 1, seen),
-      ])
-      .filter((entry) => entry[1] !== undefined),
+function safeStatus(value: unknown): value is number {
+  return (
+    typeof value === "number" &&
+    Number.isInteger(value) &&
+    value >= 100 &&
+    value <= 599
   );
 }
 
+/** Closed diagnostic vocabulary: unknown fields and arbitrary text never leave the app. */
 export function sanitizeReportMetadata(metadata: Record<string, unknown>) {
-  return sanitizeValue(metadata, 0, new WeakSet()) as Record<string, unknown>;
+  const result: Record<string, unknown> = {};
+  if (typeof metadata.code === "string" && controlledCodes.has(metadata.code))
+    result.code = metadata.code;
+  if (safeStatus(metadata.status)) result.status = metadata.status;
+  for (const [key, values] of Object.entries(metadataEnums)) {
+    const value = metadata[key];
+    if (typeof value === "string" && values.includes(value))
+      result[key] = value;
+  }
+  return result;
 }
 
 function getProperty(value: unknown, property: string): unknown {
@@ -114,24 +114,52 @@ function getProperty(value: unknown, property: string): unknown {
     : undefined;
 }
 
-function createReportedError(error: unknown): ReportedError {
-  const message =
-    error instanceof Error ? error.message : sanitizeString(String(error));
-  const reportedError = new Error(message) as ReportedError;
-
-  reportedError.name =
-    error instanceof Error ? error.name : "NonErrorException";
-  if (error instanceof Error && error.stack) reportedError.stack = error.stack;
-
+function createReportedError(
+  error: unknown,
+  trustedDigest?: string,
+): ReportedError {
+  const rawName = error instanceof Error ? error.name : "NonErrorException";
+  const name = safeErrorNames.has(rawName)
+    ? rawName
+    : error instanceof Error
+      ? "Error"
+      : "NonErrorException";
   const code = getProperty(error, "code");
-  const digest = getProperty(error, "digest");
+  const safeCode =
+    typeof code === "string" && controlledCodes.has(code) ? code : undefined;
+  const message = safeCode
+    ? `Application error: ${safeCode}`
+    : `Unhandled ${name}`;
+  const reportedError = new Error(message) as ReportedError;
+  reportedError.name = name;
+  // Original stacks can contain message text, URLs, query strings and user data.
+  // Keep only a controlled summary, never raw frames or causes.
+  reportedError.stack = `${name}: ${message}`;
+  if (safeCode) reportedError.code = safeCode;
+  if (trustedDigest && /^\d{1,20}$/.test(trustedDigest))
+    reportedError.digest = trustedDigest;
   const status = getProperty(error, "status");
-
-  if (typeof code === "string" && code) reportedError.code = code;
-  if (typeof digest === "string" && digest) reportedError.digest = digest;
-  if (typeof status === "number") reportedError.status = status;
-
+  if (safeStatus(status)) reportedError.status = status;
   return reportedError;
+}
+
+function createReport(
+  error: unknown,
+  context: ErrorReportContext,
+): ErrorReport {
+  return {
+    context: {
+      source: safeSources.has(context.source) ? context.source : "server",
+      ...(context.operation && safeOperations.has(context.operation)
+        ? { operation: context.operation }
+        : {}),
+      ...(context.metadata
+        ? { metadata: sanitizeReportMetadata(context.metadata) }
+        : {}),
+    },
+    error: createReportedError(error, context.trustedDigest),
+    timestamp: new Date().toISOString(),
+  };
 }
 
 function isExpectedOperationalError(error: unknown, source: ErrorReportSource) {
@@ -181,25 +209,15 @@ export async function reportAppError(
     reportedErrors.add(error);
   }
 
-  const safeContext: ErrorReportContext = {
-    source: context.source,
-    ...(context.operation ? { operation: context.operation } : {}),
-    ...(context.metadata
-      ? { metadata: sanitizeReportMetadata(context.metadata) }
-      : {}),
-  };
-  const report: ErrorReport = {
-    context: safeContext,
-    error: createReportedError(error),
-    timestamp: new Date().toISOString(),
-  };
+  const report = createReport(error, context);
 
   try {
     await activeReporter.captureException(report);
   } catch (reporterError) {
     console.error("Error reporter failed", {
       error: createReportedError(reporterError),
-      originalReport: report,
+      // A failing adapter may have mutated its input. Rebuild from the source.
+      originalReport: createReport(error, context),
     });
   }
 }

@@ -9,7 +9,9 @@ vi.mock("@/lib/errors/reporting", () => ({
 
 describe("onRequestError", () => {
   it("reports server failures without request headers or concrete URLs", async () => {
-    const error = new Error("Server render failed");
+    const error = Object.assign(new Error("Server render failed"), {
+      digest: "12345678",
+    });
 
     await onRequestError(
       error,
@@ -29,7 +31,8 @@ describe("onRequestError", () => {
 
     expect(reportAppError).toHaveBeenCalledWith(error, {
       source: "server",
-      operation: "GET /app/[locale]/items/page",
+      trustedDigest: "12345678",
+      operation: "GET",
       metadata: {
         renderSource: "server-rendering",
         revalidateReason: undefined,
