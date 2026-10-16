@@ -7,6 +7,7 @@ The template provides an authentication boundary without selecting an identity p
 Adapt the provider session once and pass the resulting hooks to the API client:
 
 ```ts
+import { publicEnv } from "@/config/public-env";
 import { createApiClient } from "@/lib/api/client";
 import { createApiAuthHooks } from "@/lib/auth/adapter";
 
