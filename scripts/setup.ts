@@ -450,7 +450,9 @@ async function main(): Promise<void> {
     console.log(`- ${path.replace(`${root}/`, "")}`);
   }
   if (!dryRun) {
-    console.log("\nRun pnpm install and pnpm typecheck to verify the project.");
+    console.log(
+      "\nRun pnpm install --frozen-lockfile and pnpm typecheck to verify the project.",
+    );
   }
 }
 

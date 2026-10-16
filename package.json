@@ -34,7 +34,8 @@
     "build-storybook": "storybook build",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "prepare": "lefthook install"
+    "prepare": "lefthook install",
+    "test:template": "node scripts/smoke-derived-app.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.9.1",

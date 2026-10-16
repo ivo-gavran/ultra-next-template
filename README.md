@@ -1,6 +1,6 @@
 # Ultra Next Template
 
-A minimal, domain-agnostic Next.js frontend starter. Configure its identity, start the application, and build your first feature on a reusable foundation.
+A production-minded, opinionated, domain-agnostic Next.js frontend starter. Configure its identity, start the application, and build your first feature on a reusable foundation.
 
 The home page contains an application shell, a short placeholder, locale switching and light/dark theme controls. It renders without a backend. You choose the application domain, REST contracts, authentication provider and deployment platform; no authentication backend, database or business implementation is included.
 
@@ -20,19 +20,40 @@ MSW remains a test dependency for isolated API-client contract tests. There is n
 
 ## Create a new application
 
-Use Node.js 24 or newer and the pnpm version pinned in `package.json`. Clone into your new application's directory, then configure its identity:
+1. On GitHub, open [Ultra Next Template](https://github.com/ivo-gavran/ultra-next-template), choose **Use this template → Create a new repository**, and select your application owner and name. This creates an independent repository, not a fork. If the button is unavailable, the upstream owner must enable the template setting before this workflow is available.
+2. Clone **your newly created repository**:
 
-```bash
-git clone https://github.com/ivo-gavran/ultra-next-template.git my-app
-cd my-app
-pnpm install --frozen-lockfile
-pnpm setup
-pnpm dev
-```
+   ```bash
+   git clone https://github.com/YOUR-OWNER/YOUR-APP.git
+   cd YOUR-APP
+   ```
 
-Open [http://localhost:3000](http://localhost:3000). The root uses a saved or supported browser locale preference, falling back to the configured default locale.
+3. Use Node.js **24.15.0 or newer in the 24.x line** (CI follows `.nvmrc`) and **pnpm 11.19.0**, pinned by `packageManager` in `package.json`. With nvm, run `nvm install && nvm use`; install the pinned pnpm version if needed with `npm install --global pnpm@11.19.0`. Install the exact dependency graph from the lockfile:
 
-Point the Git remote at your own repository before pushing application changes.
+   ```bash
+   pnpm install --frozen-lockfile
+   ```
+
+4. Run `pnpm setup` to personalize the application, package name, both public URLs, locale and descriptions. See [setup options](#initialize-project-identity) below.
+5. Review `src/config/site-config.json`, `.env.example` and `.env.local`. Use local URLs for development and real deployment URLs at build time. Configure API/authentication adapters when your first feature needs them. Replace the inherited README introduction and security contact with your own application information; retain useful implementation guides and the MIT notice.
+6. Run `pnpm dev` and open [http://localhost:3000](http://localhost:3000). Check `/en` and `/bs`. The root uses a saved or supported browser locale preference, falling back to your configured default locale.
+7. Stop the development server and run [verification](#verification), beginning with frozen installation, formatting, lint, types, unit tests and a production build. Install Chromium and Docker for the browser/visual checks described there. Personalization changes rendered branding: review the expected visual differences, create your application's Linux references with `pnpm test:visual:update:docker`, then rerun `pnpm test:visual:docker`.
+8. Review and commit the personalized configuration:
+
+   ```bash
+   git diff
+   git add package.json src/config/site-config.json .env.example README.md .github/SECURITY.md e2e/visual.spec.ts-snapshots
+   git commit -m "chore: initialize application"
+   git push -u origin main
+   ```
+
+`.env.local` stays uncommitted. Setup changes do not require dependency upgrades or a non-frozen install; the lockfile remains valid after a package rename. Regenerate the lockfile only when intentionally changing dependencies.
+
+GitHub template creation does not carry over upstream rulesets, repository settings, secrets or security-reporting configuration. Configure those for your repository, check Actions availability and replace the security contact before accepting reports. See [security guidance](.github/SECURITY.md).
+
+## Developing the upstream template
+
+Only contributors improving **Ultra Next Template itself** should clone `ivo-gavran/ultra-next-template` (or their contributor fork). Keep the upstream identity, install with `pnpm install --frozen-lockfile`, copy `.env.example` to `.env.local` if needed, and use a feature branch. Do not run setup in the upstream checkout to test a new identity; `pnpm test:template` exercises it in a temporary independent repository. Open contributions against upstream `main`.
 
 ## Initialize project identity
 
@@ -64,7 +85,7 @@ Setup normalizes duplicate `NEXT_PUBLIC_APP_URL` and `NEXT_PUBLIC_API_URL` assig
 
 Setup validates and prepares all output before writing, stages replacements beside each destination and preserves existing permission bits (`.env.local` defaults to `0600`). Ordinary write failures restore previously replaced files and remove temporary files. If restoration or cleanup also fails, the error lists paths needing manual recovery and retains any unrestored backup as `.setup-*/original` (ignored by Git); restore it before retrying. This is not a crash-safe multi-file transaction: interruption, power loss and simultaneous edits/setup runs require manual inspection. Run setup without concurrent file edits. Dry-run writes nothing.
 
-Setup does not edit `pnpm-lock.yaml`. After personalizing, run `pnpm install` and `pnpm typecheck`; commit any resulting lockfile changes alongside the identity changes. Use frozen installs for subsequent verification.
+Setup does not edit `pnpm-lock.yaml`. Verify personalization with `pnpm install --frozen-lockfile` and `pnpm typecheck`; commit the identity changes after the checks pass.
 
 ## Environment and production configuration
 
@@ -138,6 +159,7 @@ pnpm test:e2e
 pnpm test:e2e:production
 pnpm test:visual:docker
 pnpm performance:check
+pnpm test:template
 git diff --check
 ```
 
@@ -147,7 +169,18 @@ Update visual references only for deliberate UI changes using `pnpm test:visual:
 
 Use `pnpm test` or `pnpm test:watch` for unit tests, `pnpm exec vitest run scripts/setup.test.ts` for setup tests, `pnpm test:e2e:a11y` for accessibility, `pnpm test:e2e:ui` for the browser UI and `pnpm test:e2e:report` for saved reports. `pnpm format` applies formatting; `pnpm analyze` and `pnpm analyze:output` inspect bundles.
 
-GitHub Actions runs quality, E2E, visual and performance jobs. Coverage thresholds, accessibility checks and performance budgets are part of the starter's production quality gates.
+GitHub Actions runs on pull requests and pushes to `main`:
+
+- `quality`: frozen install, production dependency audit, generated icons, formatting, lint, types, unit coverage, derived-application smoke, Storybook and production builds.
+- `e2e`: Chromium development/accessibility and production suites.
+- `visual`: production screenshots in the pinned Playwright Linux container.
+- `performance`: production build and Lighthouse on both locales. CLS, blocking time and byte budgets fail the job; performance score and LCP are warnings.
+
+`pnpm test:template` copies the current Git working-tree source into an isolated temporary repository, installs with the lockfile, applies a different package/app identity and both public URLs, repeats setup to verify idempotency, then runs formatting, lint, types, representative setup/config/i18n/API/auth tests and a production build. HTTP checks cover both locales, identity, canonical/alternate URLs, CSP API origin, default-locale redirect, manifest, robots and sitemap. It excludes local environment files, dependencies, build output and Git history; it removes the copy and server on success, failure or handled interruption and verifies source files remain unchanged. Run it without concurrent source edits. It requires Git, Node and pnpm, but no browser or backend. Like other processes, it cannot clean up after SIGKILL or power loss.
+
+The smoke runs inside the already-required `quality` job, without repeating coverage, Storybook, browser, visual or Lighthouse suites in the copy. It complements the final real GitHub **Use this template** test; it cannot verify GitHub generation or repository settings.
+
+The existing audit gate checks production dependencies at high severity and tolerates registry outages. For release review, also run `pnpm audit --prod` and `pnpm audit` without ignoring registry errors; inspect all severities and development tools. See the [dependency assessment](docs/dependency-assessment.md).
 
 ## Structure
 
@@ -170,6 +203,12 @@ e2e/                     # Browser, accessibility and visual tests
 scripts/                 # Setup and tooling
 ```
 
-## License
+## Known limitations and release preparation
 
-MIT
+The starter supplies frontend infrastructure, not an authentication service, database, backend authorization, business domain or deployment automation. Add real API contracts, provider integration and application-specific tests before production. Public environment values are embedded at build time; rebuild when changing them. Reporting adapters need your monitoring service, and the deliberately sanitized error reports omit raw messages and stacks. Placeholder icons and content need application branding.
+
+Visual references use the default identity and Linux rendering; regenerate them deliberately after branding changes. See the [release checklist](docs/release-checklist.md), [proposed v1.0.0 notes](docs/releases/v1.0.0.md) and [dependency assessment](docs/dependency-assessment.md) for upstream release status and remaining risks. These describe the template release, not your generated application's release process.
+
+## License and attribution
+
+[MIT](LICENSE), copyright © 2026 Ultra Next contributors. Preserve the copyright and permission notice in generated applications and substantial copies; you may add your own attribution. Third-party packages retain their respective licenses.
